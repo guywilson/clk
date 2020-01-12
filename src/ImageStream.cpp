@@ -7,6 +7,7 @@ extern "C" {
 #include <png.h>
 }
 
+#include "image.h"
 #include "ImageStream.h"
 
 using namespace std;
@@ -185,7 +186,74 @@ PNG * ImageInputStream::_readPNG()
 
 Bitmap * ImageInputStream::_readBMP()
 {
+	uint8_t 	    headerBuffer[BMP_HEADER_SIZE];
+	uint8_t		    DIBHeaderBuffer[WINV3_HEADER_SIZE];
+    uint32_t        DIBHeaderSize;
+    uint32_t        fileSize;
+    uint32_t        startOffset;
+    uint32_t        width;
+    uint32_t        height;
+    uint32_t        compressionMethod;
+    uint32_t        dataLength;
+    uint8_t *       data;
+    uint16_t        bitsPerPixel;
+    BitmapType      type;
+    Bitmap *        bmp;
 
+	/*
+	** Read bitmap header...
+	*/
+	fread(headerBuffer, 1, BMP_HEADER_SIZE, getFilePtr());
+
+	memcpy(&fileSize, &headerBuffer[2], 4);
+	memcpy(&startOffset, &headerBuffer[10], 4);
+
+	fread(&DIBHeaderSize, 1, DIB_HEADER_SIZE_LEN, getFilePtr());
+	fread(DIBHeaderBuffer, 1, DIBHeaderSize - DIB_HEADER_SIZE_LEN, getFilePtr());
+
+	if (DIBHeaderSize == WINV3_HEADER_SIZE) {
+		type = WindowsV3;
+
+        memcpy(&width, &DIBHeaderBuffer[0], 4);
+        memcpy(&height, &DIBHeaderBuffer[4], 4);
+        memcpy(&bitsPerPixel, &DIBHeaderBuffer[10], 2);
+        memcpy(&compressionMethod, &DIBHeaderBuffer[12], 4);
+        memcpy(&dataLength, &DIBHeaderBuffer[16], 4);
+	}
+	else if (DIBHeaderSize == OS2V1_HEADER_SIZE) {
+		type = OS2V1;
+
+        memcpy(&width, &DIBHeaderBuffer[0], 2);
+        memcpy(&height, &DIBHeaderBuffer[2], 2);
+        memcpy(&bitsPerPixel, &DIBHeaderBuffer[6], 2);
+
+		dataLength = fileSize - startOffset;
+	}
+	else {
+		type = UnknownType;
+
+		dataLength = fileSize - startOffset;
+	}
+
+	/*
+	** Seek to beginning of bitmap data...
+	*/
+    if (fseek(getFilePtr(), startOffset, SEEK_SET)) {
+		throw new system_error(make_error_code(errc::invalid_seek));
+	}
+
+	data = (uint8_t *)malloc((size_t)dataLength);
+
+	if (data == NULL) {
+		return NULL;
+	}
+
+	fread(data, 1, dataLength, getFilePtr());
+
+    bmp = new Bitmap(data, dataLength, width, height);
+    bmp->setType(type);
+
+    return bmp;
 }
 
 void ImageInputStream::open()
@@ -222,6 +290,7 @@ RGB24BitImage * ImageInputStream::read()
     int             bytesRead;
 
     headerBytesRead = fread(headerBuffer, 1, 8, getFilePtr());
+    fseek(getFilePtr(), 0, SEEK_SET);
 
     if (isPNG(headerBuffer, headerBytesRead)) {
         PNG * png = _readPNG();
