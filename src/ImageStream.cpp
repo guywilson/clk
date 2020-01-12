@@ -9,6 +9,7 @@ extern "C" {
 
 #include "image.h"
 #include "ImageStream.h"
+#include "memutil.h"
 
 using namespace std;
 
@@ -67,11 +68,6 @@ bool ImageStream::isBMP(uint8_t * header, int size)
     else {
         return false;
     }
-}
-
-ImageInputStream::ImageInputStream() : ImageStream()
-{
-
 }
 
 ImageInputStream::ImageInputStream(string & filename) : ImageStream(filename)
@@ -139,6 +135,9 @@ PNG * ImageInputStream::_readPNG()
 	colourType = png_get_color_type(png_ptr, info_ptr);
 	
     if (bitsPerPixel != 24) {
+        throw new system_error(make_error_code(errc::not_supported));
+    }
+    if (colourType != PNG_COLOR_TYPE_RGB) {
         throw new system_error(make_error_code(errc::not_supported));
     }
 
@@ -235,6 +234,10 @@ Bitmap * ImageInputStream::_readBMP()
 		dataLength = fileSize - startOffset;
 	}
 
+    memclr(headerBuffer, BMP_HEADER_SIZE);
+    memclr(DIBHeaderBuffer, DIBHeaderSize);
+    memclr(&DIBHeaderSize, DIB_HEADER_SIZE_LEN);
+
 	/*
 	** Seek to beginning of bitmap data...
 	*/
@@ -269,23 +272,10 @@ void ImageInputStream::open()
     setFilePtr(fptr);
 }
 
-void ImageInputStream::open(string & filename)
-{
-    FILE *      fptr;
-
-    fptr = fopen(filename.c_str(), "rb");
-
-    if (fptr == NULL) {
-        throw new system_error(make_error_code(errc::no_such_file_or_directory));
-    }
-
-    setFilePtr(fptr);
-}
-
 RGB24BitImage * ImageInputStream::read()
 {
     RGB24BitImage * image;
-    uint8_t *       headerBuffer;
+    uint8_t         headerBuffer[8];
     int             headerBytesRead;
     int             bytesRead;
 
@@ -301,8 +291,35 @@ RGB24BitImage * ImageInputStream::read()
         image = bmp;
     }
     else {
+        memclr(headerBuffer, 8);
         throw new system_error(make_error_code(errc::not_supported));
     }
 
+    memclr(headerBuffer, 8);
+
     return image;
+}
+
+
+ImageOutputStream::ImageOutputStream(string & filename) : ImageStream(filename)
+{
+
+}
+
+void ImageOutputStream::open()
+{
+    FILE *      fptr;
+
+    fptr = fopen(getFilename().c_str(), "wb");
+
+    if (fptr == NULL) {
+        throw new system_error(make_error_code(errc::no_such_file_or_directory));
+    }
+
+    setFilePtr(fptr);
+}
+
+void ImageOutputStream::write(RGB24BitImage * image)
+{
+
 }

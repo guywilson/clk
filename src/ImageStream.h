@@ -37,13 +37,11 @@ class ImageStream
         bool            isBMP(uint8_t * header, int size);
 
     public:
-        ImageStream() {}
         ImageStream(string & filename) {
             this->filename = filename;
         }
 
         virtual void    open() = 0;
-        virtual void    open(string & filename) = 0;
 
         void            close() {
             fclose(fp);
@@ -57,25 +55,25 @@ class ImageInputStream : public ImageStream
         Bitmap *    _readBMP();
 
     public:
-        ImageInputStream();
         ImageInputStream(string & filename);
 
         virtual void    open();
-        virtual void    open(string & filename);
 
         RGB24BitImage * read();
 };
 
 class ImageOutputStream : public ImageStream
 {
+    private:
+        void        _writePNG(PNG * png);
+        void        _writeBMP(Bitmap * bmp);
+        
     public:
-        ImageOutputStream();
         ImageOutputStream(string & filename);
 
         virtual void    open();
-        virtual void    open(string & filename);
 
-        void            write(uint8_t * buffer, uint32_t bufferLength);
+        void            write(RGB24BitImage * image);
 };
 
 #endif
