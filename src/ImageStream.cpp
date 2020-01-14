@@ -231,8 +231,15 @@ Bitmap * ImageInputStream::_readBMP()
 	else {
 		type = UnknownType;
 
-		dataLength = fileSize - startOffset;
+        throw new system_error(make_error_code(errc::not_supported));
 	}
+
+    if (bitsPerPixel != 24) {
+        throw new system_error(make_error_code(errc::not_supported));
+    }
+    if (compressionMethod != COMPRESSION_BI_RGB) {
+        throw new system_error(make_error_code(errc::not_supported));
+    }
 
     memclr(headerBuffer, BMP_HEADER_SIZE);
     memclr(DIBHeaderBuffer, DIBHeaderSize);
@@ -277,7 +284,6 @@ RGB24BitImage * ImageInputStream::read()
     RGB24BitImage * image;
     uint8_t         headerBuffer[8];
     int             headerBytesRead;
-    int             bytesRead;
 
     headerBytesRead = fread(headerBuffer, 1, 8, getFilePtr());
     fseek(getFilePtr(), 0, SEEK_SET);
@@ -306,6 +312,120 @@ ImageOutputStream::ImageOutputStream(string & filename) : ImageStream(filename)
 
 }
 
+void ImageOutputStream::_writePNG(PNG * png)
+{
+	long			y;
+	long			x;
+	png_structp		png_ptr = NULL;
+    png_infop		info_ptr = NULL;
+	uint8_t *		row = NULL;
+	uint8_t *		rowStart = NULL;
+    uint8_t *       data;
+    uint32_t        dataLength;
+	PNG_INFO		pngInfo;
+
+    /* could also replace libpng warning-handler (final NULL), but no need: */
+    png_ptr = png_create_write_struct(
+					PNG_LIBPNG_VER_STRING, 
+					&pngInfo,
+					pngreadwrite_error_handler, 
+					NULL);
+    
+	if (!png_ptr) {
+        throw new system_error(make_error_code(errc::not_enough_memory));
+    }
+
+    info_ptr = png_create_info_struct(png_ptr);
+    
+	if (!info_ptr) {
+        png_destroy_write_struct(&png_ptr, NULL);
+        throw new system_error(make_error_code(errc::not_enough_memory));
+    }
+
+    /* make sure outfile is (re)opened in BINARY mode */
+
+    png_init_io(png_ptr, getFilePtr());
+
+    /* set the compression level*/
+
+    png_set_compression_level(png_ptr, 5);
+
+    /* set the image parameters appropriately */
+
+    png_set_IHDR(
+			png_ptr, 
+			info_ptr, 
+			png->getWidth(), 
+			png->getWidth(),
+			8, 
+			PNG_COLOR_TYPE_RGB, 
+			PNG_INTERLACE_NONE,
+			PNG_COMPRESSION_TYPE_DEFAULT, 
+			PNG_FILTER_TYPE_DEFAULT);
+
+    png_write_info(png_ptr, info_ptr);
+	
+ 	row = (uint8_t *)malloc(png->getWidth() * NUM_CHANNELS);
+
+	if (row == NULL) {
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+        throw new system_error(make_error_code(errc::not_enough_memory));
+	}
+
+    if (setjmp(pngInfo.jmpbuf)) {
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+		free(row);
+        throw new system_error(make_error_code(errc::operation_not_permitted));
+    }
+	
+    png->getImageData(&data, &dataLength);
+
+	rowStart = row;
+
+	for (y = 0L;y < png->getHeight();++y) {
+		row = rowStart;
+	
+		for (x = 0L;x < png->getWidth();++x) {
+			*row++ = *data++; // Red
+			*row++ = *data++; // Green
+			*row++ = *data++; // Blue
+		}
+
+		png_write_row(png_ptr, rowStart);
+	}
+	
+    png_write_end(png_ptr, NULL);
+	
+	if (png_ptr != NULL && info_ptr != NULL) {
+		png_destroy_write_struct(&png_ptr, &info_ptr);
+	}
+}
+
+void ImageOutputStream::_writeBMP(Bitmap * bmp)
+{
+    uint8_t *       header;
+    uint32_t        headerLength;
+    uint8_t *       data;
+    uint32_t        dataLength;
+    uint32_t        headerBytesWritten;
+    uint32_t        dataBytesWritten;
+
+    bmp->getHeader(&header, &headerLength);
+    bmp->getImageData(&data, &dataLength);
+
+    headerBytesWritten = fwrite(header, 1, headerLength, getFilePtr());
+
+    if (headerBytesWritten < headerLength) {
+        throw new system_error(make_error_code(errc::io_error));
+    }
+
+    dataBytesWritten = fwrite(data, 1, dataLength, getFilePtr());
+
+    if (dataBytesWritten < dataLength) {
+        throw new system_error(make_error_code(errc::io_error));
+    }
+}
+
 void ImageOutputStream::open()
 {
     FILE *      fptr;
@@ -321,5 +441,13 @@ void ImageOutputStream::open()
 
 void ImageOutputStream::write(RGB24BitImage * image)
 {
-
+    if (image->getFormat() == PNGImage) {
+        _writePNG((PNG *)image);
+    }
+    else if (image->getFormat() == BitmapImage) {
+        _writeBMP((Bitmap *)image);
+    }
+    else {
+        throw new system_error(make_error_code(errc::not_supported));
+    }
 }

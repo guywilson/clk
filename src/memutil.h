@@ -1,6 +1,7 @@
-#include <cstddef>
+#include <stddef.h>
 
 #ifndef _INCL_MEMUTIL
+#define _INCL_MEMUTIL
 
 #define NUM_CLR_CYCLES              7
 

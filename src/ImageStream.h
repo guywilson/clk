@@ -6,6 +6,9 @@
 using namespace std;
 
 #ifndef _INCL_IMAGESTREAM
+#define _INCL_IMAGESTREAM
+
+#define NUM_CHANNELS		 3
 
 /*
 ** Header sizes
