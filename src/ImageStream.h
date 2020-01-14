@@ -14,9 +14,7 @@ using namespace std;
 ** Header sizes
 */
 #define BMP_HEADER_SIZE		14
-#define DIB_HEADER_SIZE_LEN  4
 #define WINV3_HEADER_SIZE   40
-#define OS2V1_HEADER_SIZE   12
 
 class ImageStream
 {

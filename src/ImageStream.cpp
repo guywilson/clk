@@ -185,17 +185,12 @@ PNG * ImageInputStream::_readPNG()
 
 Bitmap * ImageInputStream::_readBMP()
 {
+    BitmapHeader    bmpHeader;
+    WinV3Header     dibHeader;
 	uint8_t 	    headerBuffer[BMP_HEADER_SIZE];
 	uint8_t		    DIBHeaderBuffer[WINV3_HEADER_SIZE];
     uint32_t        DIBHeaderSize;
-    uint32_t        fileSize;
-    uint32_t        startOffset;
-    uint32_t        width;
-    uint32_t        height;
-    uint32_t        compressionMethod;
-    uint32_t        dataLength;
     uint8_t *       data;
-    uint16_t        bitsPerPixel;
     BitmapType      type;
     Bitmap *        bmp;
 
@@ -203,64 +198,50 @@ Bitmap * ImageInputStream::_readBMP()
 	** Read bitmap header...
 	*/
 	fread(headerBuffer, 1, BMP_HEADER_SIZE, getFilePtr());
+    memcpy(&bmpHeader, headerBuffer, BMP_HEADER_SIZE);
+    
+	fread(DIBHeaderBuffer, 1, 4, getFilePtr());
+    DIBHeaderSize = (uint32_t)DIBHeaderBuffer[0];
 
-	memcpy(&fileSize, &headerBuffer[2], 4);
-	memcpy(&startOffset, &headerBuffer[10], 4);
-
-	fread(&DIBHeaderSize, 1, DIB_HEADER_SIZE_LEN, getFilePtr());
-	fread(DIBHeaderBuffer, 1, DIBHeaderSize - DIB_HEADER_SIZE_LEN, getFilePtr());
+	fread(&DIBHeaderBuffer[4], 1, DIBHeaderSize - 4, getFilePtr());
 
 	if (DIBHeaderSize == WINV3_HEADER_SIZE) {
 		type = WindowsV3;
 
-        memcpy(&width, &DIBHeaderBuffer[0], 4);
-        memcpy(&height, &DIBHeaderBuffer[4], 4);
-        memcpy(&bitsPerPixel, &DIBHeaderBuffer[10], 2);
-        memcpy(&compressionMethod, &DIBHeaderBuffer[12], 4);
-        memcpy(&dataLength, &DIBHeaderBuffer[16], 4);
-	}
-	else if (DIBHeaderSize == OS2V1_HEADER_SIZE) {
-		type = OS2V1;
-
-        memcpy(&width, &DIBHeaderBuffer[0], 2);
-        memcpy(&height, &DIBHeaderBuffer[2], 2);
-        memcpy(&bitsPerPixel, &DIBHeaderBuffer[6], 2);
-
-		dataLength = fileSize - startOffset;
+        memcpy(&dibHeader, DIBHeaderBuffer, DIBHeaderSize);
 	}
 	else {
 		type = UnknownType;
-
         throw new system_error(make_error_code(errc::not_supported));
 	}
 
-    if (bitsPerPixel != 24) {
+    if (dibHeader.bitsPerPixel != 24) {
         throw new system_error(make_error_code(errc::not_supported));
     }
-    if (compressionMethod != COMPRESSION_BI_RGB) {
+    if (dibHeader.compressionMethod != COMPRESSION_BI_RGB) {
         throw new system_error(make_error_code(errc::not_supported));
     }
 
     memclr(headerBuffer, BMP_HEADER_SIZE);
     memclr(DIBHeaderBuffer, DIBHeaderSize);
-    memclr(&DIBHeaderSize, DIB_HEADER_SIZE_LEN);
+    memclr(&DIBHeaderSize, 4);
 
 	/*
 	** Seek to beginning of bitmap data...
 	*/
-    if (fseek(getFilePtr(), startOffset, SEEK_SET)) {
+    if (fseek(getFilePtr(), bmpHeader.startOffset, SEEK_SET)) {
 		throw new system_error(make_error_code(errc::invalid_seek));
 	}
 
-	data = (uint8_t *)malloc((size_t)dataLength);
+	data = (uint8_t *)malloc((size_t)dibHeader.dataLength);
 
 	if (data == NULL) {
 		return NULL;
 	}
 
-	fread(data, 1, dataLength, getFilePtr());
+	fread(data, 1, dibHeader.dataLength, getFilePtr());
 
-    bmp = new Bitmap(data, dataLength, width, height);
+    bmp = new Bitmap(data, dibHeader.dataLength, dibHeader.width, dibHeader.height);
     bmp->setType(type);
 
     return bmp;

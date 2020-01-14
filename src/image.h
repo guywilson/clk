@@ -8,7 +8,6 @@
 */
 #define BMP_HEADER_SIZE		14
 #define WINV3_HEADER_SIZE   40
-#define OS2V1_HEADER_SIZE   12
 
 /*
 ** Bitmap compression methods
@@ -19,6 +18,33 @@
 #define COMPRESSION_BI_BITFIELDS    0x03    // Bit field
 #define COMPRESSION_BI_JPEG         0x04    // JPEG
 #define COMPRESSION_BI_PNG          0x05    // PNG
+
+typedef struct {
+    char        magicString[2] = {'B', 'M'};
+    uint32_t    fileLength;
+    uint16_t    reserved[2] = {0, 0};
+    uint32_t    startOffset;
+}
+BitmapHeader;
+
+typedef struct {
+    uint32_t    headerSize;
+    uint32_t    width;
+    uint32_t    height;
+    uint16_t    colourPlanes;
+    uint16_t    bitsPerPixel = 24;
+    uint32_t    compressionMethod;
+    uint32_t    dataLength;
+    uint32_t    horizontalResolution;
+    uint32_t    verticalResolution;
+    uint32_t    numColours;
+    uint32_t    numImportantColours;
+}
+WinV3Header;
+
+class RGB24BitImage;
+class PNG;
+class Bitmap;
 
 enum ImageFormat {
     PNGImage,
@@ -39,14 +65,14 @@ class RGB24BitImage
         uint32_t        getDataLength() {
             return this->_dataLength;
         }
-        
+
+        void            copyImageData(uint8_t * srcData, uint32_t srcDataLength);
+        void            transformImageData(uint8_t * srcData, uint32_t srcDataLength);
+
     public:
-        RGB24BitImage(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height) {
-            this->_pImageData = data;
-            this->_dataLength = dataLength;
-            this->_width = width;
-            this->_height = height;
-        }
+        RGB24BitImage(PNG & png);
+        RGB24BitImage(Bitmap & bmp);
+        RGB24BitImage(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height);
 
         uint32_t        getWidth() {
             return _width;
@@ -83,10 +109,20 @@ class PNG : public RGB24BitImage
         PNGFormat       format;
 
     public:
+        PNG(PNG & src) : RGB24BitImage(src) {}
+        PNG(Bitmap & src) : RGB24BitImage(src) {}
         PNG(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height) : RGB24BitImage(data, dataLength, width, height) {}
 
         virtual ImageFormat getFormat() {
             return PNGImage;
+        }
+
+        int getCompressionLevel() {
+            return this->compressionLevel;
+        }
+
+        PNGFormat getPNGFormat() {
+            return this->format;
         }
 
         virtual void getHeader(uint8_t ** header, uint32_t * headerLen);
@@ -94,7 +130,6 @@ class PNG : public RGB24BitImage
 
 enum BitmapType {
     WindowsV3, 
-    OS2V1, 
     UnknownType
 };
 
@@ -104,6 +139,8 @@ class Bitmap : public RGB24BitImage
         BitmapType      type;
 
     public:
+        Bitmap(Bitmap & src) : RGB24BitImage(src) {}
+        Bitmap(PNG & src) : RGB24BitImage(src) {}
         Bitmap(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height) : RGB24BitImage(data, dataLength, width, height) {}
 
         void setType(BitmapType t) {
