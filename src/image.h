@@ -61,6 +61,8 @@ class RGB24BitImage
         uint32_t        _width;
         uint32_t        _height;
 
+        bool            _isCopied;
+
     protected:
         uint32_t        getDataLength() {
             return this->_dataLength;
@@ -69,10 +71,16 @@ class RGB24BitImage
         void            copyImageData(uint8_t * srcData, uint32_t srcDataLength);
         void            transformImageData(uint8_t * srcData, uint32_t srcDataLength);
 
+        bool            isCopied() {
+            return this->_isCopied;
+        }
+
     public:
         RGB24BitImage(PNG & png);
         RGB24BitImage(Bitmap & bmp);
         RGB24BitImage(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height);
+
+        ~RGB24BitImage();
 
         uint32_t        getWidth() {
             return _width;

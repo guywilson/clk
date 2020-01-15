@@ -51,6 +51,17 @@ RGB24BitImage::RGB24BitImage(uint8_t * data, uint32_t dataLength, uint32_t width
     this->_dataLength = dataLength;
     this->_width = width;
     this->_height = height;
+
+    this->_isCopied = false;
+}
+
+RGB24BitImage::~RGB24BitImage()
+{
+    if (isCopied() && _pImageData != NULL) {
+        memclr(this->_pImageData, this->_dataLength);
+        free(this->_pImageData);
+        this->_dataLength = 0;
+    }
 }
 
 void RGB24BitImage::copyImageData(uint8_t * srcData, uint32_t srcDataLength)
@@ -61,8 +72,11 @@ void RGB24BitImage::copyImageData(uint8_t * srcData, uint32_t srcDataLength)
         this->_dataLength = 0;
     }
 
-    this->_pImageData = srcData;
+    memcpy(this->_pImageData, srcData, srcDataLength);
+
     this->_dataLength = srcDataLength;
+
+    this->_isCopied = true;
 }
 
 void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength)
@@ -96,8 +110,16 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
 
     rows = (uint8_t **)malloc(getHeight());
 
+    if (rows == NULL) {
+        throw new system_error(make_error_code(errc::not_enough_memory));
+    }
+
     for (y = getHeight() - 1;y >= 0L;--y) {
         sourceRow = (uint8_t *)malloc(rowBytes);
+
+        if (sourceRow == NULL) {
+            throw new system_error(make_error_code(errc::not_enough_memory));
+        }
 
         rows[y] = sourceRow;
 
@@ -126,6 +148,8 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
     }
 
     free(rows);
+
+    this->_isCopied = true;
 }
 
 void PNG::getHeader(uint8_t ** data, uint32_t * dataLength)
