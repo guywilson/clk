@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 
+#include "version.h"
+
 using namespace std;
 
 void printUsage()

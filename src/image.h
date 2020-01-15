@@ -64,10 +64,6 @@ class RGB24BitImage
         bool            _isCopied;
 
     protected:
-        uint32_t        getDataLength() {
-            return this->_dataLength;
-        }
-
         void            copyImageData(uint8_t * srcData, uint32_t srcDataLength);
         void            transformImageData(uint8_t * srcData, uint32_t srcDataLength);
 
@@ -91,6 +87,10 @@ class RGB24BitImage
 
         virtual ImageFormat getFormat() {
             return UnsupportedFormat;
+        }
+
+        uint32_t        getDataLength() {
+            return this->_dataLength;
         }
 
         virtual void getHeader(uint8_t ** header, uint32_t * headerLen) = 0;
