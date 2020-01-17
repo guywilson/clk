@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "../src/passwordmgr.h"
+#include "testsuite.h"
+
+void test_getKey()
+{
+    char            szPassword[32];
+    uint8_t *       key;
+    uint32_t        keyLength;
+    PasswordManager mgr;
+
+    strcpy(szPassword, "Thisisacrappassword");
+
+    keyLength = mgr.getKeyLength();
+
+    key = (uint8_t *)malloc(keyLength);
+
+    mgr.getKey(key, szPassword);
+
+    printf("Key for password [%s] is: ", szPassword);
+    for (int i = 0;i < keyLength;i++) {
+        printf("%2X", key[i]);
+    }
+    printf("\n\n");
+}

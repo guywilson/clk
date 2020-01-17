@@ -6,9 +6,11 @@
 class PasswordManager
 {
     public:
-        PasswordManager();
+        PasswordManager() {}
 
-        uint8_t *       getKey(char * szPassword);
+        uint32_t    getKeyLength();
+
+        void        getKey(uint8_t * key, char * szPassword);
 };
 
 #endif

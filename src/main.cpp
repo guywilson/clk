@@ -2,6 +2,7 @@
 #include <string>
 
 #include "version.h"
+#include "../test/testsuite.h"
 
 using namespace std;
 
@@ -20,21 +21,33 @@ void printUsage()
 	cout.flush();
 }
 
+void runTests()
+{
+    cout << "Running test suite..." << endl << endl;
+
+    test_getKey();
+}
+
 int main(int argc, char **argv)
 {
     int         i;
+    char *      arg;
 
     for (i = 1;i < argc;i++) {
-        if (argv[i][0] == '-' || argv[i][0] == '/') {
-            switch (argv[i][1]) {
-                case '?':
-                case 'h':
-                    printUsage();
-                    return 0;
+        arg = argv[i];
 
-				default:
-					cout << "Invalid option (" << argv[i][1] << ") - cloak -? for help" << endl << endl;
-					return -1;
+        if (arg[0] == '-') {
+            if (strncmp(arg, "--help", 6) == 0) {
+                printUsage();
+                return 0;
+            }
+            else if (strncmp(arg, "--test", 6) == 0) {
+                runTests();
+                return 0;
+            }
+            else {
+                cout << "Invalid option (" << arg << ") - clk --help for help" << endl << endl;
+                return -1;
             }
         }
     }

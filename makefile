@@ -12,6 +12,7 @@ MINOR_VERSION = 1
 
 # Directories
 SOURCE = src
+TEST = test
 BUILD = build
 DEP = dep
 
@@ -46,11 +47,16 @@ CPPSRCFILES = $(wildcard $(SOURCE)/*.cpp)
 OBJFILES = $(patsubst $(SOURCE)/%.c, $(BUILD)/%.o, $(CSRCFILES)) $(patsubst $(SOURCE)/%.cpp, $(BUILD)/%.o, $(CPPSRCFILES))
 DEPFILES = $(patsubst $(SOURCE)/%.c, $(DEP)/%.d, $(CSRCFILES)) $(patsubst $(SOURCE)/%.cpp, $(DEP)/%.d, $(CPPSRCFILES))
 
+CTSTFILES = $(wildcard $(TEST)/*.c)
+CPPTSTFILES = $(wildcard $(TEST)/*.cpp)
+TSTOBJFILES = $(patsubst $(TEST)/%.c, $(BUILD)/%.o, $(CTSTFILES)) $(patsubst $(TEST)/%.cpp, $(BUILD)/%.o, $(CPPTSTFILES))
+TSTDEPFILES = $(patsubst $(TEST)/%.c, $(DEP)/%.d, $(CTSTFILES)) $(patsubst $(TEST)/%.cpp, $(DEP)/%.d, $(CPPTSTFILES))
+
 all: $(TARGET)
 
 # Compile C/C++ source files
 #
-$(TARGET): $(OBJFILES)
+$(TARGET): $(OBJFILES) $(TSTOBJFILES)
 	$(LINK.o) $^ $(EXTLIBS)
 
 $(BUILD)/%.o: $(SOURCE)/%.c
@@ -61,6 +67,18 @@ $(BUILD)/%.o: $(SOURCE)/%.c $(DEP)/%.d
 
 $(BUILD)/%.o: $(SOURCE)/%.cpp
 $(BUILD)/%.o: $(SOURCE)/%.cpp $(DEP)/%.d
+	$(PRECOMPILE)
+	$(COMPILE.cpp) $<
+	$(POSTCOMPILE)
+
+$(BUILD)/%.o: $(TEST)/%.c
+$(BUILD)/%.o: $(TEST)/%.c $(DEP)/%.d
+	$(PRECOMPILE)
+	$(COMPILE.c) $<
+	$(POSTCOMPILE)
+
+$(BUILD)/%.o: $(TEST)/%.cpp
+$(BUILD)/%.o: $(TEST)/%.cpp $(DEP)/%.d
 	$(PRECOMPILE)
 	$(COMPILE.cpp) $<
 	$(POSTCOMPILE)
