@@ -12,11 +12,45 @@ class EncryptionHelper
     private:
         uint8_t *       generateIV(uint8_t * key, uint32_t keyLength);
 
+        DataFile *      encryptAES256(DataFile & src, uint8_t * key, uint32_t keyLength);
+        DataFile *      decryptAES256(DataFile & src, uint8_t * key, uint32_t keyLength);
+
+        DataFile *      encryptXOR(DataFile & src, uint8_t * key, uint32_t keyLength);
+        DataFile *      decryptXOR(DataFile & src, uint8_t * key, uint32_t keyLength);
+
     public:
         EncryptionHelper() {}
 
-        DataFile *      encrypt(DataFile & src, uint8_t * key, uint32_t keyLength);
-        DataFile *      decrypt(DataFile & src, uint8_t * key, uint32_t keyLength);
+        enum Algorithm {
+            AES_256,
+            XOR
+        };
+
+        DataFile *      encrypt(DataFile & src, Algorithm alg, uint8_t * key, uint32_t keyLength) {
+            switch (alg) {
+                case AES_256:
+                    return encryptAES256(src, key, keyLength);
+
+                case XOR:
+                    return encryptXOR(src, key, keyLength);
+
+                default:
+                    return NULL;
+            }
+        }
+
+        DataFile *      decrypt(DataFile & src, Algorithm alg, uint8_t * key, uint32_t keyLength) {
+            switch (alg) {
+                case AES_256:
+                    return decryptAES256(src, key, keyLength);
+
+                case XOR:
+                    return decryptXOR(src, key, keyLength);
+
+                default:
+                    return NULL;
+            }
+        }
 };
 
 #endif

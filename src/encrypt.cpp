@@ -49,7 +49,7 @@ uint8_t * EncryptionHelper::generateIV(uint8_t * key, uint32_t keyLength)
     return iv;
 }
 
-DataFile * EncryptionHelper::encrypt(DataFile & src, uint8_t * key, uint32_t keyLength)
+DataFile * EncryptionHelper::encryptAES256(DataFile & src, uint8_t * key, uint32_t keyLength)
 {
     DataFile *          outputDataFile;
     gcry_cipher_hd_t	aes_hd;
@@ -120,7 +120,7 @@ DataFile * EncryptionHelper::encrypt(DataFile & src, uint8_t * key, uint32_t key
     return outputDataFile;
 }
 
-DataFile * EncryptionHelper::decrypt(DataFile & src, uint8_t * key, uint32_t keyLength)
+DataFile * EncryptionHelper::decryptAES256(DataFile & src, uint8_t * key, uint32_t keyLength)
 {
     DataFile *          outputDataFile;
     gcry_cipher_hd_t	aes_hd;
@@ -189,4 +189,40 @@ DataFile * EncryptionHelper::decrypt(DataFile & src, uint8_t * key, uint32_t key
     outputDataFile = new DataFile(outputData, outputDataLength);
 
     return outputDataFile;
+}
+
+DataFile * EncryptionHelper::encryptXOR(DataFile & src, uint8_t * key, uint32_t keyLength)
+{
+    DataFile *          outputDataFile;
+    uint8_t *           inputData;
+    uint8_t *           outputData;
+    uint32_t            inputDataLength;
+    uint32_t            outputDataLength;
+
+    src.getData(&inputData, &inputDataLength);
+
+    if (keyLength < inputDataLength) {
+        throw new system_error(make_error_code(errc::protocol_error));
+    }
+
+	outputDataLength = inputDataLength;
+
+    outputData = (uint8_t *)malloc(outputDataLength);
+
+    if (outputData == NULL) {
+        throw new system_error(make_error_code(errc::not_enough_memory));
+    }
+
+    for (int i = 0;i < inputDataLength;i++) {
+        outputData[i] = inputData[i] ^ key[i];
+    }
+
+    outputDataFile = new DataFile(outputData, outputDataLength);
+
+    return outputDataFile;
+}
+
+DataFile * EncryptionHelper::decryptXOR(DataFile & src, uint8_t * key, uint32_t keyLength)
+{
+    return encryptXOR(src, key, keyLength);
 }
