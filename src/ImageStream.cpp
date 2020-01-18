@@ -1,12 +1,11 @@
 #include <string>
-#include <system_error>
 #include <stdio.h>
-#include <cerrno>
 
 extern "C" {
 #include <png.h>
 }
 
+#include "clk_error.h"
 #include "image.h"
 #include "ImageStream.h"
 #include "memutil.h"
@@ -135,10 +134,10 @@ PNG * ImageInputStream::_readPNG()
 	colourType = png_get_color_type(png_ptr, info_ptr);
 	
     if (bitsPerPixel != 24) {
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Image must be 24-bit", __FILE__, __LINE__);
     }
     if (colourType != PNG_COLOR_TYPE_RGB) {
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Image must be RGB", __FILE__, __LINE__);
     }
 
     dataLength = png_get_image_width(png_ptr, info_ptr) * png_get_channels(png_ptr, info_ptr) * png_get_image_height(png_ptr, info_ptr);
@@ -146,8 +145,8 @@ PNG * ImageInputStream::_readPNG()
 	data = (uint8_t *)malloc(dataLength);
 	
 	if (data == NULL) {
-	  png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	  return NULL;
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
 	}
 	
 	dataStart = data;
@@ -155,8 +154,8 @@ PNG * ImageInputStream::_readPNG()
 	row = (uint8_t *)malloc(png_get_image_width(png_ptr, info_ptr) * png_get_channels(png_ptr, info_ptr));
 	
 	if (row == NULL) {
-	  png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-	  return NULL;
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
 	}
 	
 	rowStart = row;
@@ -211,15 +210,14 @@ Bitmap * ImageInputStream::_readBMP()
         memcpy(&dibHeader, DIBHeaderBuffer, DIBHeaderSize);
 	}
 	else {
-		type = UnknownType;
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Invalid bitmap type", __FILE__, __LINE__);
 	}
 
     if (dibHeader.bitsPerPixel != 24) {
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Image must be 24-bit", __FILE__, __LINE__);
     }
     if (dibHeader.compressionMethod != COMPRESSION_BI_RGB) {
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Compressed bitmaps are not supported", __FILE__, __LINE__);
     }
 
     memclr(headerBuffer, BMP_HEADER_SIZE);
@@ -230,13 +228,13 @@ Bitmap * ImageInputStream::_readBMP()
 	** Seek to beginning of bitmap data...
 	*/
     if (fseek(getFilePtr(), bmpHeader.startOffset, SEEK_SET)) {
-		throw new system_error(make_error_code(errc::invalid_seek));
+        throw clk_error("Failed to seek to bitmap data", __FILE__, __LINE__);
 	}
 
 	data = (uint8_t *)malloc((size_t)dibHeader.dataLength);
 
 	if (data == NULL) {
-		return NULL;
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
 	}
 
 	fread(data, 1, dibHeader.dataLength, getFilePtr());
@@ -254,7 +252,7 @@ void ImageInputStream::open()
     fptr = fopen(getFilename().c_str(), "rb");
 
     if (fptr == NULL) {
-        throw new system_error(make_error_code(errc::no_such_file_or_directory));
+        throw clk_error("Failed to open image file", __FILE__, __LINE__);
     }
 
     setFilePtr(fptr);
@@ -279,7 +277,7 @@ RGB24BitImage * ImageInputStream::read()
     }
     else {
         memclr(headerBuffer, 8);
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Only PNG and BMP files are supported", __FILE__, __LINE__);
     }
 
     memclr(headerBuffer, 8);
@@ -313,14 +311,14 @@ void ImageOutputStream::_writePNG(PNG * png)
 					NULL);
     
 	if (!png_ptr) {
-        throw new system_error(make_error_code(errc::not_enough_memory));
+        throw clk_error("Failed to create PNG write structure", __FILE__, __LINE__);
     }
 
     info_ptr = png_create_info_struct(png_ptr);
     
 	if (!info_ptr) {
         png_destroy_write_struct(&png_ptr, NULL);
-        throw new system_error(make_error_code(errc::not_enough_memory));
+        throw clk_error("Failed to create PNG info structure", __FILE__, __LINE__);
     }
 
     /* make sure outfile is (re)opened in BINARY mode */
@@ -350,13 +348,13 @@ void ImageOutputStream::_writePNG(PNG * png)
 
 	if (row == NULL) {
 		png_destroy_write_struct(&png_ptr, &info_ptr);
-        throw new system_error(make_error_code(errc::not_enough_memory));
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
 	}
 
     if (setjmp(pngInfo.jmpbuf)) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
 		free(row);
-        throw new system_error(make_error_code(errc::operation_not_permitted));
+        throw clk_error("Failed to set error jump buffer", __FILE__, __LINE__);
     }
 	
     png->getImageData(&data, &dataLength);
@@ -397,13 +395,13 @@ void ImageOutputStream::_writeBMP(Bitmap * bmp)
     headerBytesWritten = fwrite(header, 1, headerLength, getFilePtr());
 
     if (headerBytesWritten < headerLength) {
-        throw new system_error(make_error_code(errc::io_error));
+        throw clk_error("Failed to read enough Bitmap header bytes", __FILE__, __LINE__);
     }
 
     dataBytesWritten = fwrite(data, 1, dataLength, getFilePtr());
 
     if (dataBytesWritten < dataLength) {
-        throw new system_error(make_error_code(errc::io_error));
+        throw clk_error("Failed to write enough Bitmap data", __FILE__, __LINE__);
     }
 }
 
@@ -414,7 +412,7 @@ void ImageOutputStream::open()
     fptr = fopen(getFilename().c_str(), "wb");
 
     if (fptr == NULL) {
-        throw new system_error(make_error_code(errc::no_such_file_or_directory));
+        throw clk_error("Failed to open ImageStream for writing", __FILE__, __LINE__);
     }
 
     setFilePtr(fptr);
@@ -429,6 +427,6 @@ void ImageOutputStream::write(RGB24BitImage * image)
         _writeBMP((Bitmap *)image);
     }
     else {
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Trying to write invalid image data", __FILE__, __LINE__);
     }
 }

@@ -1,10 +1,9 @@
-#include <system_error>
-#include <cerrno>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
 
+#include "clk_error.h"
 #include "datafile.h"
 #include "compress.h"
 
@@ -32,7 +31,7 @@ DataFile * CompressionHelper::compress(DataFile & src, int compressionLevel)
         compressedData = (uint8_t *)malloc(compressedDataLength);
 
         if (compressedData == NULL) {
-            throw new system_error(make_error_code(errc::not_enough_memory));
+            throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
         }
 
         rtn = compress2(
@@ -43,7 +42,7 @@ DataFile * CompressionHelper::compress(DataFile & src, int compressionLevel)
                     compressionLevel);
 
         if (rtn != Z_OK) {
-            throw new system_error(make_error_code(errc::io_error));
+            throw clk_error("Failed to compress data", __FILE__, __LINE__);
         }
     }
     else {
@@ -52,7 +51,7 @@ DataFile * CompressionHelper::compress(DataFile & src, int compressionLevel)
         compressedData = (uint8_t *)malloc(compressedDataLength);
 
         if (compressedData == NULL) {
-            throw new system_error(make_error_code(errc::not_enough_memory));
+            throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
         }
         
         memcpy(compressedData, srcData, srcDataLength);
@@ -77,7 +76,7 @@ DataFile * CompressionHelper::inflate(DataFile & src, uint32_t outputDataLength)
     inflatedData = (uint8_t *)malloc(outputDataLength);
 
     if (inflatedData == NULL) {
-        throw new system_error(make_error_code(errc::not_enough_memory));
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
     }
 
     rtn = uncompress(
@@ -87,7 +86,7 @@ DataFile * CompressionHelper::inflate(DataFile & src, uint32_t outputDataLength)
                 srcDataLength);
 
     if (rtn != Z_OK) {
-        throw new system_error(make_error_code(errc::io_error));
+        throw clk_error("Failed to inflate data", __FILE__, __LINE__);
     }
 
     inflatedDataFile = new DataFile(inflatedData, inflatedDataLength);

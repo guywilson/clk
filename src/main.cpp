@@ -26,6 +26,7 @@ void runTests()
     cout << "Running test suite..." << endl << endl;
 
     test_getKey();
+    test_encrypt();
 }
 
 int main(int argc, char **argv)

@@ -1,8 +1,7 @@
 #include <string>
-#include <system_error>
-#include <cerrno>
 #include <stdio.h>
 
+#include "clk_error.h"
 #include "datafile.h"
 #include "filestream.h"
 
@@ -15,7 +14,7 @@ void FileInputStream::open()
     fptr = fopen(this->getFileName().c_str(), "rb");
 
     if (fptr == NULL) {
-        throw new system_error(make_error_code(errc::no_such_file_or_directory));
+        throw clk_error("Failed to open file for reading", __FILE__, __LINE__);
     }
 
     this->setFilePtr(fptr);
@@ -38,13 +37,13 @@ DataFile * FileInputStream::read()
     fileData = (uint8_t *)malloc(fileLength);
 
     if (fileData == NULL) {
-        throw new system_error(make_error_code(errc::not_enough_memory));
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
     }
 
     bytesRead = fread(fileData, 1, fileLength, this->getFilePtr());
 
     if (bytesRead < fileLength) {
-        throw new system_error(make_error_code(errc::io_error));
+        throw clk_error("Failed to read enough data bytes", __FILE__, __LINE__);
     }
 
     df = new DataFile(fileData, fileLength);
@@ -59,7 +58,7 @@ void FileOutputStream::open()
     fptr = fopen(this->getFileName().c_str(), "wb");
 
     if (fptr == NULL) {
-        throw new system_error(make_error_code(errc::no_such_file_or_directory));
+        throw clk_error("Failed to open file for writing", __FILE__, __LINE__);
     }
 
     this->setFilePtr(fptr);
@@ -76,6 +75,6 @@ void FileOutputStream::write(DataFile * df)
     bytesWritten = fwrite(fileData, 1, fileLength, this->getFilePtr());
 
     if (bytesWritten < fileLength) {
-        throw new system_error(make_error_code(errc::io_error));
+        throw clk_error("Failed to write enough data", __FILE__, __LINE__);
     }
 }

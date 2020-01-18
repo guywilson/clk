@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <system_error>
-#include <cerrno>
 
+#include "clk_error.h"
 #include "image.h"
 #include "memutil.h"
 
@@ -111,14 +110,14 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
     rows = (uint8_t **)malloc(getHeight());
 
     if (rows == NULL) {
-        throw new system_error(make_error_code(errc::not_enough_memory));
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
     }
 
     for (y = getHeight() - 1;y >= 0L;--y) {
         sourceRow = (uint8_t *)malloc(rowBytes);
 
         if (sourceRow == NULL) {
-            throw new system_error(make_error_code(errc::not_enough_memory));
+            throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
         }
 
         rows[y] = sourceRow;
@@ -154,7 +153,7 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
 
 void PNG::getHeader(uint8_t ** data, uint32_t * dataLength)
 {
-    throw new system_error(make_error_code(errc::not_supported));
+    throw clk_error("Called unimplemented method", __FILE__, __LINE__);
 }
 
 void Bitmap::getHeader(uint8_t ** header, uint32_t * headerLen)
@@ -168,7 +167,7 @@ void Bitmap::getHeader(uint8_t ** header, uint32_t * headerLen)
         *header = (uint8_t *)malloc(*headerLen);
 
         if (*header == NULL) {
-            throw new system_error(make_error_code(errc::not_enough_memory));
+            throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
         }
 
         memclr(&bitmapHeader, sizeof(BitmapHeader));
@@ -190,6 +189,6 @@ void Bitmap::getHeader(uint8_t ** header, uint32_t * headerLen)
         memcpy(&buffer[BMP_HEADER_SIZE], &infoHeader, sizeof(WinV3Header));
     }
     else {
-        throw new system_error(make_error_code(errc::not_supported));
+        throw clk_error("Invalid bitmap format", __FILE__, __LINE__);
     }
 }

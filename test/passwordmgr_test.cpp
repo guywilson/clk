@@ -13,6 +13,8 @@ void test_getKey()
     uint32_t        keyLength;
     PasswordManager mgr;
 
+    printf("In test_getKey()\n");
+    
     strcpy(szPassword, "Thisisacrappassword");
 
     keyLength = mgr.getKeyLength();
