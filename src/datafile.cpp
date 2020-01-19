@@ -40,3 +40,34 @@ DataFile::~DataFile()
         this->_dataLength = 0;
     }
 }
+
+bool DataFile::operator== (DataFile& rhs) {
+    uint8_t *   lhsData;
+    uint8_t *   rhsData;
+    uint32_t    lhsLength, rhsLength, compareLength;
+
+    this->getData(&lhsData, &lhsLength);
+    rhs.getData(&rhsData, &rhsLength);
+
+    // if (lhsLength != rhsLength) {
+    //     return false;
+    // }
+
+    if (lhsLength < rhsLength) {
+        compareLength = lhsLength;
+    }
+    else {
+        compareLength = rhsLength;
+    }
+
+    if (memcmp(lhsData, rhsData, compareLength) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool DataFile::operator!= (DataFile& rhs)
+{
+    return !(*this == rhs);
+}

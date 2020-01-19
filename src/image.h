@@ -19,26 +19,26 @@
 #define COMPRESSION_BI_JPEG         0x04    // JPEG
 #define COMPRESSION_BI_PNG          0x05    // PNG
 
-typedef struct {
-    char        magicString[2] = {'B', 'M'};
-    uint32_t    fileLength;
-    uint16_t    reserved[2] = {0, 0};
-    uint32_t    startOffset;
+typedef struct __attribute__((__packed__)) {        // Start Offset
+    char        magicString[2] = {'B', 'M'};        //  0
+    uint32_t    fileLength;                         //  2
+    uint8_t     reserved[4] = {0, 0, 0, 0};         //  6
+    uint32_t    startOffset;                        // 10
 }
 BitmapHeader;
 
-typedef struct {
-    uint32_t    headerSize;
-    uint32_t    width;
-    uint32_t    height;
-    uint16_t    colourPlanes;
-    uint16_t    bitsPerPixel = 24;
-    uint32_t    compressionMethod;
-    uint32_t    dataLength;
-    uint32_t    horizontalResolution;
-    uint32_t    verticalResolution;
-    uint32_t    numColours;
-    uint32_t    numImportantColours;
+typedef struct __attribute__((__packed__)) {
+    uint32_t    headerSize;                         //  0   14
+    uint32_t    width;                              //  4   18
+    uint32_t    height;                             //  8   22
+    uint16_t    colourPlanes;                       // 12   26
+    uint16_t    bitsPerPixel = 24;                  // 14   28
+    uint32_t    compressionMethod;                  // 16   30
+    uint32_t    dataLength;                         // 20   34
+    uint32_t    horizontalResolution;               // 24   38
+    uint32_t    verticalResolution;                 // 28   42
+    uint32_t    numColours;                         // 32   46
+    uint32_t    numImportantColours;                // 36   50
 }
 WinV3Header;
 
@@ -89,12 +89,15 @@ class RGB24BitImage
             return UnsupportedFormat;
         }
 
+        virtual uint8_t *   getHeader() = 0;
+        virtual uint32_t    getHeaderLength() = 0;
+
         uint32_t        getDataLength() {
             return this->_dataLength;
         }
-
-        virtual void getHeader(uint8_t ** header, uint32_t * headerLen) = 0;
-
+        uint8_t *       getImageData() {
+            return this->_pImageData;
+        }
         void getImageData(uint8_t ** data, uint32_t * dataLength) {
             *data = this->_pImageData;
             *dataLength = this->_dataLength;
@@ -133,7 +136,8 @@ class PNG : public RGB24BitImage
             return this->format;
         }
 
-        virtual void getHeader(uint8_t ** header, uint32_t * headerLen);
+        virtual uint8_t *   getHeader();
+        virtual uint32_t    getHeaderLength();
 };
 
 enum BitmapType {
@@ -159,7 +163,8 @@ class Bitmap : public RGB24BitImage
             return BitmapImage;
         }
 
-        virtual void getHeader(uint8_t ** header, uint32_t * headerLen);
+        virtual uint8_t *   getHeader();
+        virtual uint32_t    getHeaderLength();
 };
 
 #endif

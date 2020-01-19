@@ -35,12 +35,6 @@ uint8_t * EncryptionHelper::generateIV(uint8_t * key, uint32_t keyLength)
 
 	gcry_md_write(blake_hd, key, keyLength);
 
-	err = gcry_md_final(blake_hd);
-
-	if (err) {
-        throw clk_error("Failed to finalise hash function", __FILE__, __LINE__);
-	}
-
 	iv = gcry_md_read(blake_hd, GCRY_MD_BLAKE2S_128);
 
 	gcry_md_close(blake_hd);
@@ -56,17 +50,21 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
     uint8_t *           outputData;
     uint32_t            inputDataLength;
     uint32_t            outputDataLength;
+    uint32_t            ivLength;
+    uint32_t            blockLength;
     int                 err;
 
     err = gcry_cipher_open(
     					&aes_hd,
     					GCRY_CIPHER_AES256,
                         GCRY_CIPHER_MODE_CBC,
-                        0);
+                        GCRY_CIPHER_SECURE);
 
     if (err) {
         throw clk_error("Failed to open cipher function", __FILE__, __LINE__);
     }
+
+    printf("Key length = %u\n", keyLength * 8);
 
     err = gcry_cipher_setkey(
     					aes_hd,
@@ -77,22 +75,36 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
         throw clk_error("Failed to set key", __FILE__, __LINE__);
     }
 
+    ivLength = gcry_md_get_algo_dlen(GCRY_MD_BLAKE2S_128);
+
     err = gcry_cipher_setiv(
     					aes_hd,
     					(const void *)generateIV(key, keyLength),
-    					BLOCK_SIZE);
+    					ivLength);
 
     if (err) {
         throw clk_error("Failed to set iv", __FILE__, __LINE__);
     }
 
+    blockLength = gcry_cipher_get_algo_blklen(GCRY_CIPHER_AES256);
+
+    if (!blockLength) {
+        throw clk_error("Faied to get algorithm block length", __FILE__, __LINE__);
+    }
+
+    printf("Block length = %u\n", blockLength);
+
     src->getData(&inputData, &inputDataLength);
 
-	if (inputDataLength % BLOCK_SIZE == 0) {
-		outputDataLength = inputDataLength + BLOCK_SIZE;
+    if (inputData == NULL) {
+        throw clk_error("Failed to get input data", __FILE__, __LINE__);
+    }
+
+	if (inputDataLength % blockLength == 0) {
+		outputDataLength = inputDataLength;
 	}
 	else {
-		outputDataLength = inputDataLength + (BLOCK_SIZE - (inputDataLength % BLOCK_SIZE) + BLOCK_SIZE);
+		outputDataLength = inputDataLength + (blockLength - (inputDataLength % blockLength));
 	}
 
     printf("Input len %u, Output len %u\n", inputDataLength, outputDataLength);
@@ -103,15 +115,17 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
         throw clk_error(clk_error::buildMsg("Failed to allocate %ld bytes", outputDataLength), __FILE__, __LINE__);
     }
 
+    memcpy(outputData, inputData, inputDataLength);
+
 	err = gcry_cipher_encrypt(
 							aes_hd,
 							outputData,
 							outputDataLength,
-							inputData,
-							inputDataLength);
+							NULL,//inputData,
+							0);//inputDataLength);
 
 	if (err) {
-        throw clk_error(clk_error::buildMsg("Failed to encrypt data - %s", gcry_strerror(err)), __FILE__, __LINE__);
+        throw clk_error(clk_error::buildMsg("Failed to encrypt data - %s [%u]", gcry_strerror(err), err), __FILE__, __LINE__);
 	}
 
     gcry_cipher_close(aes_hd);
@@ -129,6 +143,7 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t * key, uint32
     uint8_t *           outputData;
     uint32_t            inputDataLength;
     uint32_t            outputDataLength;
+    uint32_t            ivLength;
     int                 err;
 
     err = gcry_cipher_open(
@@ -150,23 +165,19 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t * key, uint32
         throw clk_error("Failed to set key", __FILE__, __LINE__);
     }
 
+    ivLength = gcry_md_get_algo_dlen(GCRY_MD_BLAKE2S_128);
+
     err = gcry_cipher_setiv(
     					aes_hd,
     					(const void *)generateIV(key, keyLength),
-    					BLOCK_SIZE);
-
+    					ivLength);
     if (err) {
         throw clk_error("Failed to set iv", __FILE__, __LINE__);
     }
 
     src->getData(&inputData, &inputDataLength);
 
-	if (inputDataLength % BLOCK_SIZE == 0) {
-		outputDataLength = inputDataLength;
-	}
-	else {
-		outputDataLength = inputDataLength + (BLOCK_SIZE - (inputDataLength % BLOCK_SIZE));
-	}
+	outputDataLength = inputDataLength;
 
     outputData = (uint8_t *)malloc(outputDataLength);
 

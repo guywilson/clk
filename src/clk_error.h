@@ -18,6 +18,11 @@ class clk_error : public exception
             this->message.assign("Cloak error");
         }
 
+        clk_error(const char * msg) {
+            this->message.assign("Cloak error: ");
+            this->message.append(msg);
+        }
+
         clk_error(const char * msg, const char * file, int line) {
             char lineNumBuf[8];
 

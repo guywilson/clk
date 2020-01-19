@@ -1,3 +1,5 @@
 /dep
 /build
 clk
+*.bmp
+*.png

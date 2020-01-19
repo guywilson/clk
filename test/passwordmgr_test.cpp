@@ -6,7 +6,7 @@
 #include "../src/passwordmgr.h"
 #include "testsuite.h"
 
-void test_getKey()
+bool test_getKey()
 {
     char            szPassword[32];
     uint8_t *       key;
@@ -28,4 +28,6 @@ void test_getKey()
         printf("%2X", key[i]);
     }
     printf("\n\n");
+
+    return true;
 }

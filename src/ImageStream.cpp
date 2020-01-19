@@ -56,7 +56,7 @@ bool ImageStream::isPNG(uint8_t * header, int size)
     
     is_png = png_sig_cmp(header, 0, size);
 
-    return is_png != 0 ? true : false;
+    return is_png == 0 ? true : false;
 }
 
 bool ImageStream::isBMP(uint8_t * header, int size)
@@ -83,6 +83,7 @@ PNG * ImageInputStream::_readPNG()
     uint32_t        width;
     uint32_t        height;
     uint32_t        dataLength;
+    uint8_t         channels;
     uint8_t *       data;
     uint8_t *       dataStart;
     uint8_t *       row;
@@ -130,6 +131,7 @@ PNG * ImageInputStream::_readPNG()
 	
 	width = png_get_image_width(png_ptr, info_ptr);
 	height = png_get_image_height(png_ptr, info_ptr);
+    channels = png_get_channels(png_ptr, info_ptr);
 	bitsPerPixel = png_get_bit_depth(png_ptr, info_ptr) * png_get_channels(png_ptr, info_ptr);
 	colourType = png_get_color_type(png_ptr, info_ptr);
 	
@@ -140,7 +142,9 @@ PNG * ImageInputStream::_readPNG()
         throw clk_error("Image must be RGB", __FILE__, __LINE__);
     }
 
-    dataLength = png_get_image_width(png_ptr, info_ptr) * png_get_channels(png_ptr, info_ptr) * png_get_image_height(png_ptr, info_ptr);
+    dataLength = width * height * channels;
+
+    printf("PNG width %u, height %u, channels %d, datalen %u\n", width, height, channels, dataLength);
 
 	data = (uint8_t *)malloc(dataLength);
 	
@@ -151,7 +155,7 @@ PNG * ImageInputStream::_readPNG()
 	
 	dataStart = data;
 	
-	row = (uint8_t *)malloc(png_get_image_width(png_ptr, info_ptr) * png_get_channels(png_ptr, info_ptr));
+	row = (uint8_t *)malloc(width * channels);
 	
 	if (row == NULL) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
@@ -160,12 +164,12 @@ PNG * ImageInputStream::_readPNG()
 	
 	rowStart = row;
 	
-	for (y = 0;y < png_get_image_height(png_ptr, info_ptr);++y) {
+	for (y = 0;y < height;++y) {
 		row = rowStart;
 		
 		png_read_row(png_ptr, row, NULL);
 		
-		for (x = 0;x < png_get_image_width(png_ptr, info_ptr);++x) {
+		for (x = 0;x < width;++x) {
 			*data++ = *row++; // Red
 			*data++ = *row++; // Green
 			*data++ = *row++; // Blue
@@ -212,6 +216,8 @@ Bitmap * ImageInputStream::_readBMP()
 	else {
         throw clk_error("Invalid bitmap type", __FILE__, __LINE__);
 	}
+
+    printf("readBMP() width %u, height %u, datalen %u\n", dibHeader.width, dibHeader.height, dibHeader.dataLength);
 
     if (dibHeader.bitsPerPixel != 24) {
         throw clk_error("Image must be 24-bit", __FILE__, __LINE__);
@@ -301,6 +307,8 @@ void ImageOutputStream::_writePNG(PNG * png)
 	uint8_t *		rowStart = NULL;
     uint8_t *       data;
     uint32_t        dataLength;
+    uint32_t        width;
+    uint32_t        height;
 	PNG_INFO		pngInfo;
 
     /* could also replace libpng warning-handler (final NULL), but no need: */
@@ -329,13 +337,19 @@ void ImageOutputStream::_writePNG(PNG * png)
 
     png_set_compression_level(png_ptr, 5);
 
+    png->getImageData(&data, &dataLength);
+    width = png->getWidth();
+    height = png->getHeight();
+
+    printf("writePNG() Data len %u, width %u, height %u\n", dataLength, width, height);
+
     /* set the image parameters appropriately */
 
     png_set_IHDR(
 			png_ptr, 
 			info_ptr, 
-			png->getWidth(), 
-			png->getWidth(),
+			width, 
+			height,
 			8, 
 			PNG_COLOR_TYPE_RGB, 
 			PNG_INTERLACE_NONE,
@@ -344,7 +358,7 @@ void ImageOutputStream::_writePNG(PNG * png)
 
     png_write_info(png_ptr, info_ptr);
 	
- 	row = (uint8_t *)malloc(png->getWidth() * NUM_CHANNELS);
+ 	row = (uint8_t *)malloc(width * NUM_CHANNELS);
 
 	if (row == NULL) {
 		png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -357,14 +371,12 @@ void ImageOutputStream::_writePNG(PNG * png)
         throw clk_error("Failed to set error jump buffer", __FILE__, __LINE__);
     }
 	
-    png->getImageData(&data, &dataLength);
-
 	rowStart = row;
 
-	for (y = 0L;y < png->getHeight();++y) {
+	for (y = 0L;y < height;++y) {
 		row = rowStart;
 	
-		for (x = 0L;x < png->getWidth();++x) {
+		for (x = 0L;x < width;++x) {
 			*row++ = *data++; // Red
 			*row++ = *data++; // Green
 			*row++ = *data++; // Blue
@@ -389,7 +401,9 @@ void ImageOutputStream::_writeBMP(Bitmap * bmp)
     uint32_t        headerBytesWritten;
     uint32_t        dataBytesWritten;
 
-    bmp->getHeader(&header, &headerLength);
+    header = bmp->getHeader();
+    headerLength = bmp->getHeaderLength();
+    
     bmp->getImageData(&data, &dataLength);
 
     headerBytesWritten = fwrite(header, 1, headerLength, getFilePtr());

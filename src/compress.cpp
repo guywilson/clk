@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,12 +10,12 @@
 
 using namespace std;
 
-DataFile * CompressionHelper::compress(DataFile & src)
+DataFile * CompressionHelper::compress(DataFile * src)
 {
     return compress(src, 5);
 }
 
-DataFile * CompressionHelper::compress(DataFile & src, int compressionLevel)
+DataFile * CompressionHelper::compress(DataFile * src, int compressionLevel)
 {  
     DataFile *      compressedDataFile;
     uint32_t        compressedDataLength;
@@ -23,7 +24,7 @@ DataFile * CompressionHelper::compress(DataFile & src, int compressionLevel)
     uint8_t *       srcData;
     int             rtn;
 
-    src.getData(&srcData, &srcDataLength);
+    src->getData(&srcData, &srcDataLength);
 
     if (compressionLevel > 0) {
         compressedDataLength = compressBound(srcDataLength);
@@ -42,7 +43,7 @@ DataFile * CompressionHelper::compress(DataFile & src, int compressionLevel)
                     compressionLevel);
 
         if (rtn != Z_OK) {
-            throw clk_error("Failed to compress data", __FILE__, __LINE__);
+            throw clk_error(clk_error::buildMsg("Failed to compress data - %d", rtn), __FILE__, __LINE__);
         }
     }
     else {
@@ -62,16 +63,15 @@ DataFile * CompressionHelper::compress(DataFile & src, int compressionLevel)
     return compressedDataFile;
 }
 
-DataFile * CompressionHelper::inflate(DataFile & src, uint32_t outputDataLength)
+DataFile * CompressionHelper::inflate(DataFile * src, uint32_t outputDataLength)
 {
     DataFile *      inflatedDataFile;
-    uint32_t        inflatedDataLength;
     uint8_t *       inflatedData;
     uint32_t        srcDataLength;
     uint8_t *       srcData;
     int             rtn;
 
-    src.getData(&srcData, &srcDataLength);
+    src->getData(&srcData, &srcDataLength);
 
     inflatedData = (uint8_t *)malloc(outputDataLength);
 
@@ -81,15 +81,15 @@ DataFile * CompressionHelper::inflate(DataFile & src, uint32_t outputDataLength)
 
     rtn = uncompress(
                 inflatedData,
-                (unsigned long *)&inflatedDataLength,
+                (unsigned long *)&outputDataLength,
                 srcData,
                 srcDataLength);
 
     if (rtn != Z_OK) {
-        throw clk_error("Failed to inflate data", __FILE__, __LINE__);
+        throw clk_error(clk_error::buildMsg("Failed to inflate data - %d", rtn), __FILE__, __LINE__);
     }
 
-    inflatedDataFile = new DataFile(inflatedData, inflatedDataLength);
+    inflatedDataFile = new DataFile(inflatedData, outputDataLength);
 
     return inflatedDataFile;
 }

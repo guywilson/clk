@@ -151,39 +151,45 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
     this->_isCopied = true;
 }
 
-void PNG::getHeader(uint8_t ** data, uint32_t * dataLength)
+uint8_t * PNG::getHeader()
 {
     throw clk_error("Called unimplemented method", __FILE__, __LINE__);
 }
 
-void Bitmap::getHeader(uint8_t ** header, uint32_t * headerLen)
+uint32_t PNG::getHeaderLength()
+{
+    throw clk_error("Called unimplemented method", __FILE__, __LINE__);
+}
+
+uint8_t * Bitmap::getHeader()
 {
     BitmapHeader    bitmapHeader;
     WinV3Header     infoHeader;
     uint8_t *       buffer;
 
     if (type == WindowsV3) {
-        *headerLen = BMP_HEADER_SIZE + WINV3_HEADER_SIZE;
-        *header = (uint8_t *)malloc(*headerLen);
+        buffer = (uint8_t *)malloc(getHeaderLength());
 
-        if (*header == NULL) {
+        if (buffer == NULL) {
             throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
         }
 
         memclr(&bitmapHeader, sizeof(BitmapHeader));
         memclr(&infoHeader, sizeof(WinV3Header));
 
-        buffer = *header;
-
-        bitmapHeader.magicString[0] = 'B';
-        bitmapHeader.magicString[1] = 'M';
         infoHeader.dataLength = this->getDataLength();
         infoHeader.headerSize = WINV3_HEADER_SIZE;
-        bitmapHeader.fileLength = infoHeader.dataLength + BMP_HEADER_SIZE + infoHeader.headerSize;
-        bitmapHeader.startOffset = BMP_HEADER_SIZE + infoHeader.headerSize;
         infoHeader.width = this->getWidth();
         infoHeader.height = this->getHeight();
         infoHeader.bitsPerPixel = 24;
+        infoHeader.horizontalResolution = 300;
+        infoHeader.verticalResolution = 300;
+        infoHeader.colourPlanes = 1;
+
+        bitmapHeader.magicString[0] = 'B';
+        bitmapHeader.magicString[1] = 'M';
+        bitmapHeader.fileLength = infoHeader.dataLength + BMP_HEADER_SIZE + infoHeader.headerSize;
+        bitmapHeader.startOffset = BMP_HEADER_SIZE + infoHeader.headerSize;
 
         memcpy(buffer, &bitmapHeader, sizeof(BitmapHeader));
         memcpy(&buffer[BMP_HEADER_SIZE], &infoHeader, sizeof(WinV3Header));
@@ -191,4 +197,11 @@ void Bitmap::getHeader(uint8_t ** header, uint32_t * headerLen)
     else {
         throw clk_error("Invalid bitmap format", __FILE__, __LINE__);
     }
+
+    return buffer;
+}
+
+uint32_t Bitmap::getHeaderLength()
+{
+    return sizeof(BitmapHeader) + sizeof(WinV3Header);
 }

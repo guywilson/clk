@@ -10,13 +10,20 @@
 
 using namespace std;
 
-void test_encrypt()
+bool test_encrypt()
 {
-    char        key[33] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
-    uint32_t    len = 32;
-    string      fname;
+    char            key[33] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
+    uint32_t        len = 32;
+    string          fname;
+    uint8_t *       srcData;
+    uint32_t        srcDataLength;
+    uint8_t *       decryptedData;
+    uint32_t        decryptedDataLength;
 
-    printf("In test_encrypt()\n");
+    DataFile *  encryptedDf;
+    DataFile *  decryptedDf;
+
+    cout << "In test_encrypt()" << endl;
 
     fname.assign("README.md");
 
@@ -31,7 +38,24 @@ void test_encrypt()
 
         EncryptionHelper * eh = new EncryptionHelper();
 
-        eh->encrypt(src, eh->AES_256, (uint8_t *)key, len);
+        encryptedDf = eh->encrypt(src, eh->AES_256, (uint8_t *)key, len);
+        decryptedDf = eh->decrypt(encryptedDf, eh->AES_256, (uint8_t *)key, len);
+
+        src->getData(&srcData, &srcDataLength);
+        decryptedDf->getData(&decryptedData, &decryptedDataLength);
+
+        // for (int i = 0;i < srcDataLength;i++) {
+        //     printf("src '%c' [0x%02X]\tdec '%c' [0x%02X]\n", (char)srcData[i], srcData[i], (char)decryptedData[i], decryptedData[i]);
+        // }
+
+        if (memcmp(srcData, decryptedData, srcDataLength) == 0) {
+            cout << "DataFiles are equal..." << endl;
+            return true;
+        }
+        else {
+            cout << "Datafiles are not equal!" << endl;
+            return false;
+        }
     }
     catch (clk_error & ce) {
         cout << "Caught clk_error: " << ce.what() << endl;

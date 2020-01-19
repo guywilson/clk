@@ -23,10 +23,34 @@ void printUsage()
 
 void runTests()
 {
+    int     passCount = 0;
+    int     runCount = 7;
+
     cout << "Running test suite..." << endl << endl;
 
-    test_getKey();
-    test_encrypt();
+    if (test_getKey()) {
+        passCount++;
+    }
+    if (test_encrypt()) {
+        passCount++;
+    }
+    if (test_compress()) {
+        passCount++;
+    }
+    if (test_PNG()) {
+        passCount++;
+    }
+    if (test_Bitmap()) {
+        passCount++;
+    }
+    if (test_PNGtoBitmap()) {
+        passCount++;
+    }
+    if (test_BitmaptoPNG()) {
+        passCount++;
+    }
+
+    cout << endl << "Ran " << runCount << " tests, " << passCount << " passed, " << (runCount - passCount) << " failed." << endl;
 }
 
 int main(int argc, char **argv)
