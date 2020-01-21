@@ -12,21 +12,40 @@ class DataFile
 
         bool            _isCopied;
 
+    protected:
+        uint8_t *       _getData() {
+            return this->_data;
+        }
+        uint32_t        _getDataLength() {
+            return this->_dataLength;
+        }
+        void _setData(uint8_t * data) {
+            this->_data = data;
+        }
+        void _setDataLength(uint32_t dataLength) {
+            this->_dataLength = dataLength;
+        }
+
+        void _setIsCopied(bool isCopied) {
+            this->_isCopied = isCopied;
+        }
+
     public:
+        DataFile() {}
         DataFile(DataFile & src);
         DataFile(uint8_t * data, uint32_t dataLength);
 
         ~DataFile();
 
-        uint32_t        getDataLength() {
+        virtual uint32_t getDataLength() {
             return this->_dataLength;
         }
 
-        uint8_t *       getData() {
+        virtual uint8_t * getData() {
             return this->_data;
         }
         
-        void            getData(uint8_t ** data, uint32_t * dataLength) {
+        virtual void getData(uint8_t ** data, uint32_t * dataLength) {
             *data = this->_data;
             *dataLength = this->_dataLength;
         }
@@ -34,9 +53,16 @@ class DataFile
         bool operator== (DataFile & rhs);
         bool operator!= (DataFile & rhs);
 
-        bool            isCopied() {
+        bool isCopied() {
             return this->_isCopied;
         }
+};
+
+class LengthEncodedDataFile : public DataFile
+{
+    public:
+        LengthEncodedDataFile(DataFile & src);
+        LengthEncodedDataFile(uint8_t * data, uint32_t dataLength);
 };
 
 #endif

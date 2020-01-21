@@ -81,9 +81,30 @@ bool test_Bitmap()
 
 bool test_PNGtoBitmap()
 {
+    string          imageInputName = "flowers.png";
+    string          imageOutputName = "flowers_translated.bmp";
+
     cout << "In test_PNGtoBitmap()" << endl;
     
     try {
+        ImageInputStream is(imageInputName);
+
+        is.open();
+        PNG * img =  (PNG *)is.read();
+        is.close();
+
+        if (img->getFormat() != PNGImage) {
+            throw clk_error("Invalid image format read");
+        }
+
+        ImageOutputStream os(imageOutputName);
+
+        os.open();
+        os.write(new Bitmap(*img));
+        os.close();
+
+        cout << "Check the two image files..." << endl;
+
         return true;
     }
     catch (clk_error & ce) {
@@ -94,9 +115,30 @@ bool test_PNGtoBitmap()
 
 bool test_BitmaptoPNG()
 {
+    string          imageInputName = "flowers.bmp";
+    string          imageOutputName = "flowers_translated.png";
+
     cout << "In test_BitmaptoPNG()" << endl;
     
     try {
+        ImageInputStream is(imageInputName);
+
+        is.open();
+        Bitmap * img =  (Bitmap *)is.read();
+        is.close();
+
+        if (img->getFormat() != PNGImage) {
+            throw clk_error("Invalid image format read");
+        }
+
+        ImageOutputStream os(imageOutputName);
+
+        os.open();
+        os.write(new PNG(*img));
+        os.close();
+
+        cout << "Check the two image files..." << endl;
+
         return true;
     }
     catch (clk_error & ce) {

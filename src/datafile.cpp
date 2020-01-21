@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "clk_error.h"
 #include "datafile.h"
 #include "memutil.h"
 
@@ -10,12 +11,19 @@ DataFile::DataFile(DataFile & src)
     uint8_t *       srcData;
     uint32_t        srcDataLength;
 
-    src.getData(&srcData, &srcDataLength);
+    srcData = src.getData();
+    srcDataLength = src.getDataLength();
 
     if (this->_data != NULL) {
         memclr(this->_data, this->_dataLength);
         free(this->_data);
         this->_dataLength = 0;
+    }
+
+    this->_data = (uint8_t *)malloc(srcDataLength);
+
+    if (this->_data == NULL) {
+        throw clk_error("Failed to allocate memory for DataFile", __FILE__, __LINE__);
     }
 
     memcpy(this->_data, srcData, srcDataLength);
@@ -70,4 +78,62 @@ bool DataFile::operator== (DataFile& rhs) {
 bool DataFile::operator!= (DataFile& rhs)
 {
     return !(*this == rhs);
+}
+
+LengthEncodedDataFile::LengthEncodedDataFile(DataFile & src) : DataFile()
+{
+    uint8_t *       data;
+    uint8_t *       srcData;
+    uint32_t        dataLength;
+    uint32_t        srcDataLength;
+
+    data = _getData();
+    dataLength = _getDataLength();
+
+    srcData = src.getData();
+    srcDataLength = src.getDataLength();
+
+    if (data != NULL) {
+        memclr(data, dataLength);
+        free(data);
+        _setDataLength(0);
+    }
+
+    dataLength = srcDataLength + sizeof(uint32_t);
+
+    data = (uint8_t *)malloc(dataLength);
+
+    if (data == NULL) {
+        throw clk_error("Failed to allocate memory for DataFile", __FILE__, __LINE__);
+    }
+
+    memcpy(data, &srcDataLength, sizeof(uint32_t));
+    memcpy(&data[sizeof(uint32_t)], srcData, srcDataLength);
+
+    this->_setData(data);
+    this->_setDataLength(dataLength);
+
+    this->_setIsCopied(true);
+}
+
+LengthEncodedDataFile::LengthEncodedDataFile(uint8_t * data, uint32_t dataLength) : DataFile()
+{
+    uint8_t *       thisData;
+    uint32_t        thisDataLength;
+
+    thisDataLength = dataLength + sizeof(uint32_t);
+
+    thisData = (uint8_t *)malloc(thisDataLength);
+
+    if (thisData == NULL) {
+        throw clk_error("Failed to allocate memory for DataFile", __FILE__, __LINE__);
+    }
+
+    memcpy(thisData, &dataLength, sizeof(uint32_t));
+    memcpy(&thisData[sizeof(uint32_t)], data, dataLength);
+
+    this->_setData(thisData);
+    this->_setDataLength(thisDataLength);
+
+    this->_setIsCopied(false);
 }
