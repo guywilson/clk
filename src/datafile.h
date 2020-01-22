@@ -61,8 +61,10 @@ class DataFile
 class LengthEncodedDataFile : public DataFile
 {
     public:
-        LengthEncodedDataFile(DataFile & src);
-        LengthEncodedDataFile(uint8_t * data, uint32_t dataLength);
+        LengthEncodedDataFile(DataFile & src, uint32_t encodedLength);
+        LengthEncodedDataFile(uint8_t * data, uint32_t dataLength, uint32_t encodedLength);
+
+        uint32_t getEncodedLength();
 };
 
 #endif

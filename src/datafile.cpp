@@ -80,12 +80,14 @@ bool DataFile::operator!= (DataFile& rhs)
     return !(*this == rhs);
 }
 
-LengthEncodedDataFile::LengthEncodedDataFile(DataFile & src) : DataFile()
+LengthEncodedDataFile::LengthEncodedDataFile(DataFile & src, uint32_t encodedLength) : DataFile()
 {
     uint8_t *       data;
     uint8_t *       srcData;
+    uint8_t *       newData;
     uint32_t        dataLength;
     uint32_t        srcDataLength;
+    uint32_t        newDataLength;
 
     data = _getData();
     dataLength = _getDataLength();
@@ -99,41 +101,50 @@ LengthEncodedDataFile::LengthEncodedDataFile(DataFile & src) : DataFile()
         _setDataLength(0);
     }
 
-    dataLength = srcDataLength + sizeof(uint32_t);
+    newDataLength = srcDataLength + sizeof(encodedLength);
 
-    data = (uint8_t *)malloc(dataLength);
+    newData = (uint8_t *)malloc(newDataLength);
 
-    if (data == NULL) {
+    if (newData == NULL) {
         throw clk_error("Failed to allocate memory for DataFile", __FILE__, __LINE__);
     }
 
-    memcpy(data, &srcDataLength, sizeof(uint32_t));
-    memcpy(&data[sizeof(uint32_t)], srcData, srcDataLength);
+    memcpy(newData, &encodedLength, sizeof(encodedLength));
+    memcpy(&newData[sizeof(encodedLength)], srcData, srcDataLength);
 
-    this->_setData(data);
-    this->_setDataLength(dataLength);
+    this->_setData(newData);
+    this->_setDataLength(newDataLength);
 
     this->_setIsCopied(true);
 }
 
-LengthEncodedDataFile::LengthEncodedDataFile(uint8_t * data, uint32_t dataLength) : DataFile()
+LengthEncodedDataFile::LengthEncodedDataFile(uint8_t * data, uint32_t dataLength, uint32_t encodedLength) : DataFile()
 {
-    uint8_t *       thisData;
-    uint32_t        thisDataLength;
+    uint8_t *       newData;
+    uint32_t        newDataLength;
 
-    thisDataLength = dataLength + sizeof(uint32_t);
+    newDataLength = dataLength + sizeof(encodedLength);
 
-    thisData = (uint8_t *)malloc(thisDataLength);
+    newData = (uint8_t *)malloc(newDataLength);
 
-    if (thisData == NULL) {
+    if (newData == NULL) {
         throw clk_error("Failed to allocate memory for DataFile", __FILE__, __LINE__);
     }
 
-    memcpy(thisData, &dataLength, sizeof(uint32_t));
-    memcpy(&thisData[sizeof(uint32_t)], data, dataLength);
+    memcpy(newData, &encodedLength, sizeof(encodedLength));
+    memcpy(&newData[sizeof(encodedLength)], data, dataLength);
 
-    this->_setData(thisData);
-    this->_setDataLength(thisDataLength);
+    this->_setData(newData);
+    this->_setDataLength(newDataLength);
 
     this->_setIsCopied(false);
+}
+
+uint32_t LengthEncodedDataFile::getEncodedLength()
+{
+    uint32_t        encodedLength;
+
+    memcpy(&encodedLength, this->_getData(), sizeof(uint32_t));
+
+    return encodedLength;
 }
