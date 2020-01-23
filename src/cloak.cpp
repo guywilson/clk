@@ -106,13 +106,32 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQuality bitsPerBy
     uint8_t *           targetData;
     uint32_t            targetDataLength;
     uint8_t             mask;
-    uint8_t             dataBits;
-    int                 i, bitCounter;
+    uint8_t             dataLengthBuffer[4] = {0x00, 0x00, 0x00, 0x00};
+    int                 i, bitCounter, pos, numDataLengthBytes, numDataBytes;
 
     srcImageData = srcImage->getImageData();
     srcImageDataLength = srcImage->getDataLength();
 
-    targetDataLength = srcImageDataLength;
+    mask = getBitMask(bitsPerByte);
+
+    bitCounter = 0;
+    pos = 0;
+    numDataLengthBytes = 4 * 8 / bitsPerByte;
+
+    for (i = 0;i < numDataLengthBytes;i++) {
+        dataLengthBuffer[pos] += ((srcImageData[i] & mask) << bitCounter);
+
+        bitCounter += bitsPerByte;
+
+        if (bitCounter == 8) {
+            bitCounter = 0;
+            pos++; 
+        }
+    }
+
+    memcpy(&targetDataLength, dataLengthBuffer, 4);
+
+    printf("Target data length = %u\n", targetDataLength);
 
     targetData = (uint8_t *)malloc(targetDataLength);
 
@@ -120,14 +139,20 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQuality bitsPerBy
         throw clk_error("Failed to allocate memory for target data file", __FILE__, __LINE__);
     }
 
-    mask = getBitMask(bitsPerByte);
+    bitCounter = 0;
+    pos = 0;
+    numDataBytes = targetDataLength * (8 / bitsPerByte);
 
-    // for (i = 0;i < secretDataLength;i++) {
-    //     for (bitCounter = 0;bitCounter < 8;bitCounter += bitsPerByte) {
-    //         dataBits = (secretData[i] >> bitCounter) & mask;
-    //         targetImageData[i] = (srcImageData[i] & ~mask) | dataBits;
-    //     }
-    // }
+    for (i = numDataLengthBytes;i < numDataBytes;i++) {
+        targetData[pos] += ((srcImageData[i] & mask) << bitCounter);
+
+        bitCounter += bitsPerByte;
+
+        if (bitCounter == 8) {
+            bitCounter = 0;
+            pos++; 
+        }
+    }
 
     targetDataFile = new DataFile(targetData, targetDataLength);
 

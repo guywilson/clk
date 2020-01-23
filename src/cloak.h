@@ -17,7 +17,7 @@ class CloakHelper
 
     private:
         uint8_t             getBitMask(MergeQuality bitsPerByte) {
-            uint8_t mask;
+            uint8_t mask = 0x00;
 
             for (int i = 0;i < bitsPerByte;i++) {
                 mask += (0x01 << i) & 0xFF;
