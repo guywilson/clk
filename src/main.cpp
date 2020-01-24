@@ -24,7 +24,7 @@ void printUsage()
 void runTests()
 {
     int     passCount = 0;
-    int     runCount = 9;
+    int     runCount = 10;
 
     cout << "Running test suite..." << endl << endl;
 
@@ -41,6 +41,9 @@ void runTests()
         passCount++;
     }
     if (test_Bitmap()) {
+        passCount++;
+    }
+    if (test_copy()) {
         passCount++;
     }
     if (test_read_write()) {

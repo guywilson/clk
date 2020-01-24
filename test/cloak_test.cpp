@@ -17,7 +17,9 @@ bool test_merge()
     string          imageInputName = "flowers.png";
     string          imageOutputName = "flowers_copy.png";
     string          secretFileName = "LICENSE";
-    string          outputFileName = "LICENSE.copy";
+    string          outputFileName = "LICENSE.test_merge.copy";
+    // string          secretFileName = "flowers.bmp";
+    // string          outputFileName = "flowers.test_merge.bmp";
 
     cout << "In test_merge()" << endl;
 

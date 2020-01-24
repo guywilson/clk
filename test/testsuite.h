@@ -10,5 +10,6 @@ bool test_PNGtoBitmap();
 bool test_BitmaptoPNG();
 bool test_merge();
 bool test_read_write();
+bool test_copy();
 
 #endif

@@ -19,12 +19,6 @@ DataFile::DataFile(DataFile * src)
     srcData = src->getData();
     srcDataLength = src->getDataLength();
 
-    if (this->_data != NULL) {
-        memclr(this->_data, this->_dataLength);
-        free(this->_data);
-        this->_dataLength = 0;
-    }
-
     this->_data = (uint8_t *)malloc(srcDataLength);
 
     if (this->_data == NULL) {
@@ -85,42 +79,8 @@ bool DataFile::operator!= (DataFile& rhs)
     return !(*this == rhs);
 }
 
-LengthEncodedDataFile::LengthEncodedDataFile(DataFile & src, uint32_t encodedLength) : DataFile()
+LengthEncodedDataFile::LengthEncodedDataFile(DataFile & src, uint32_t encodedLength) : LengthEncodedDataFile(&src, encodedLength)
 {
-    uint8_t *       data;
-    uint8_t *       srcData;
-    uint8_t *       newData;
-    uint32_t        dataLength;
-    uint32_t        srcDataLength;
-    uint32_t        newDataLength;
-
-    data = _getData();
-    dataLength = _getDataLength();
-
-    srcData = src.getData();
-    srcDataLength = src.getDataLength();
-
-    if (data != NULL) {
-        memclr(data, dataLength);
-        free(data);
-        _setDataLength(0);
-    }
-
-    newDataLength = srcDataLength + sizeof(encodedLength);
-
-    newData = (uint8_t *)malloc(newDataLength);
-
-    if (newData == NULL) {
-        throw clk_error("Failed to allocate memory for DataFile", __FILE__, __LINE__);
-    }
-
-    memcpy(newData, &encodedLength, sizeof(encodedLength));
-    memcpy(&newData[sizeof(encodedLength)], srcData, srcDataLength);
-
-    this->_setData(newData);
-    this->_setDataLength(newDataLength);
-
-    this->_setIsCopied(true);
 }
 
 LengthEncodedDataFile::LengthEncodedDataFile(DataFile * src, uint32_t encodedLength) : DataFile()
@@ -137,12 +97,6 @@ LengthEncodedDataFile::LengthEncodedDataFile(DataFile * src, uint32_t encodedLen
 
     srcData = src->getData();
     srcDataLength = src->getDataLength();
-
-    if (data != NULL) {
-        memclr(data, dataLength);
-        free(data);
-        _setDataLength(0);
-    }
 
     newDataLength = srcDataLength + sizeof(encodedLength);
 

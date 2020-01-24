@@ -3,3 +3,5 @@
 clk
 *.bmp
 *.png
+LICENSE.test_merge.copy
+LICENSE.test_read_write.copy

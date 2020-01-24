@@ -72,8 +72,12 @@ class RGB24BitImage
         }
 
     public:
-        RGB24BitImage(PNG & png);
-        RGB24BitImage(Bitmap & bmp);
+        RGB24BitImage(RGB24BitImage & src);
+        RGB24BitImage(RGB24BitImage * src);
+        RGB24BitImage(PNG & src);
+        RGB24BitImage(PNG * src);
+        RGB24BitImage(Bitmap & src);
+        RGB24BitImage(Bitmap * src);
         RGB24BitImage(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height);
 
         ~RGB24BitImage();
@@ -121,7 +125,9 @@ class PNG : public RGB24BitImage
 
     public:
         PNG(PNG & src) : RGB24BitImage(src) {}
+        PNG(PNG * src) : RGB24BitImage(src) {}
         PNG(Bitmap & src) : RGB24BitImage(src) {}
+        PNG(Bitmap * src) : RGB24BitImage(src) {}
         PNG(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height) : RGB24BitImage(data, dataLength, width, height) {}
 
         virtual ImageFormat getFormat() {
@@ -152,7 +158,9 @@ class Bitmap : public RGB24BitImage
 
     public:
         Bitmap(Bitmap & src) : RGB24BitImage(src) {}
+        Bitmap(Bitmap * src) : RGB24BitImage(src) {}
         Bitmap(PNG & src) : RGB24BitImage(src) {}
+        Bitmap(PNG * src) : RGB24BitImage(src) {}
         Bitmap(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height) : RGB24BitImage(data, dataLength, width, height) {}
 
         void setType(BitmapType t) {

@@ -8,17 +8,45 @@
 
 using namespace std;
 
-RGB24BitImage::RGB24BitImage(PNG & png)
+RGB24BitImage::RGB24BitImage(RGB24BitImage & src) : RGB24BitImage(&src)
+{
+}
+
+RGB24BitImage::RGB24BitImage(RGB24BitImage * src)
 {
     uint8_t * srcData;
     uint32_t srcDataLength;
     
-    this->_width = png.getWidth();
-    this->_height = png.getHeight();
+    this->_width = src->getWidth();
+    this->_height = src->getHeight();
 
-    png.getImageData(&srcData, &srcDataLength);
+    srcData = src->getImageData();
+    srcDataLength = src->getDataLength();
+
+    if (this->getFormat() != src->getFormat()) {
+        transformImageData(srcData, srcDataLength);
+    }
+    else {
+        copyImageData(srcData, srcDataLength);
+    }
+}
+ 
+RGB24BitImage::RGB24BitImage(PNG & src) : RGB24BitImage(&src)
+{
+}
+
+RGB24BitImage::RGB24BitImage(PNG * src)
+{
+    uint8_t * srcData;
+    uint32_t srcDataLength;
     
-    if (this->getFormat() != PNGImage) {
+    this->_width = src->getWidth();
+    this->_height = src->getHeight();
+
+    srcData = src->getImageData();
+    srcDataLength = src->getDataLength();
+
+    if (this->getFormat() != src->getFormat()) {
         transformImageData(srcData, srcDataLength);
     }
     else {
@@ -26,17 +54,22 @@ RGB24BitImage::RGB24BitImage(PNG & png)
     }
 }
 
-RGB24BitImage::RGB24BitImage(Bitmap & bmp)
+RGB24BitImage::RGB24BitImage(Bitmap & src) : RGB24BitImage(&src)
+{
+}
+
+RGB24BitImage::RGB24BitImage(Bitmap * src)
 {
     uint8_t * srcData;
     uint32_t srcDataLength;
     
-    this->_width = bmp.getWidth();
-    this->_height = bmp.getHeight();
+    this->_width = src->getWidth();
+    this->_height = src->getHeight();
 
-    bmp.getImageData(&srcData, &srcDataLength);
-    
-    if (this->getFormat() != BitmapImage) {
+    srcData = src->getImageData();
+    srcDataLength = src->getDataLength();
+
+    if (this->getFormat() != src->getFormat()) {
         transformImageData(srcData, srcDataLength);
     }
     else {
@@ -88,12 +121,6 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
 	uint8_t *	targetRow;
 	uint8_t **	rows;
 
-    if (this->_pImageData != NULL) {
-        memclr(this->_pImageData, this->_dataLength);
-        free(_pImageData);
-        this->_dataLength = 0;
-    }
-    
     /*
     ** Bitmap data is encoded in rows left->right with the rows
     ** encoded from bottom to top. Each pixel is encoded with
@@ -107,7 +134,7 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
 
     i = 0L;
 
-    rows = (uint8_t **)malloc(getHeight());
+    rows = (uint8_t **)malloc(getHeight() * sizeof(uint8_t *));
 
     if (rows == NULL) {
         throw clk_error("Failed to allocate memory", __FILE__, __LINE__);

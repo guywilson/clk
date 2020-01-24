@@ -90,17 +90,19 @@ bool test_PNGtoBitmap()
         ImageInputStream is(imageInputName);
 
         is.open();
-        PNG * img =  (PNG *)is.read();
+        PNG * png =  (PNG *)is.read();
         is.close();
 
-        if (img->getFormat() != PNGImage) {
+        if (png->getFormat() != PNGImage) {
             throw clk_error("Invalid image format read");
         }
+
+        Bitmap * bmp = new Bitmap(png);
 
         ImageOutputStream os(imageOutputName);
 
         os.open();
-        os.write(new Bitmap(*img));
+        os.write(bmp);
         os.close();
 
         cout << "Check the two image files..." << endl;
@@ -124,17 +126,19 @@ bool test_BitmaptoPNG()
         ImageInputStream is(imageInputName);
 
         is.open();
-        Bitmap * img =  (Bitmap *)is.read();
+        Bitmap * bmp =  (Bitmap *)is.read();
         is.close();
 
-        if (img->getFormat() != PNGImage) {
+        if (bmp->getFormat() != BitmapImage) {
             throw clk_error("Invalid image format read");
         }
+
+        PNG * png = new PNG(bmp);
 
         ImageOutputStream os(imageOutputName);
 
         os.open();
-        os.write(new PNG(*img));
+        os.write(png);
         os.close();
 
         cout << "Check the two image files..." << endl;
