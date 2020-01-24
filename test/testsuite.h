@@ -8,5 +8,7 @@ bool test_PNG();
 bool test_Bitmap();
 bool test_PNGtoBitmap();
 bool test_BitmaptoPNG();
+bool test_merge();
+bool test_read_write();
 
 #endif

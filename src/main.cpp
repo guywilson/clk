@@ -24,7 +24,7 @@ void printUsage()
 void runTests()
 {
     int     passCount = 0;
-    int     runCount = 7;
+    int     runCount = 9;
 
     cout << "Running test suite..." << endl << endl;
 
@@ -41,6 +41,12 @@ void runTests()
         passCount++;
     }
     if (test_Bitmap()) {
+        passCount++;
+    }
+    if (test_read_write()) {
+        passCount++;
+    }
+    if (test_merge()) {
         passCount++;
     }
     if (test_PNGtoBitmap()) {
