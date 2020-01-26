@@ -80,7 +80,7 @@ class RGB24BitImage
         RGB24BitImage(Bitmap * src);
         RGB24BitImage(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height);
 
-        ~RGB24BitImage();
+        virtual ~RGB24BitImage();
 
         uint32_t        getWidth() {
             return _width;

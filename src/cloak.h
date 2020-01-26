@@ -29,8 +29,8 @@ class CloakHelper
     public:
         CloakHelper() {}
 
-        RGB24BitImage *     merge(RGB24BitImage * srcImage, DataFile * srcDataFile, MergeQuality bitsPerByte);
-        DataFile *          extract(RGB24BitImage * srcImage, MergeQuality bitsPerByte);
+        RGB24BitImage *         merge(RGB24BitImage * srcImage, DataFile * srcDataFile, MergeQuality bitsPerByte);
+        LengthEncodedDataFile * extract(RGB24BitImage * srcImage, MergeQuality bitsPerByte);
 };
 
 #endif

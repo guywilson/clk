@@ -36,7 +36,7 @@ class DataFile
         DataFile(DataFile * src);
         DataFile(uint8_t * data, uint32_t dataLength);
 
-        ~DataFile();
+        virtual ~DataFile();
 
         virtual uint32_t getDataLength() {
             return this->_dataLength;
@@ -65,8 +65,17 @@ class LengthEncodedDataFile : public DataFile
         LengthEncodedDataFile(DataFile & src, uint32_t encodedLength);
         LengthEncodedDataFile(DataFile * src, uint32_t encodedLength);
         LengthEncodedDataFile(uint8_t * data, uint32_t dataLength, uint32_t encodedLength);
+        LengthEncodedDataFile(uint8_t * data, uint32_t dataLength);
 
-        uint32_t getEncodedLength();
+        static uint32_t extractLength(uint8_t * data);
+
+        uint32_t        getEncodedLength();
+
+        uint8_t *       getRawData();
+
+        uint32_t        getRawDataLength() {
+            return getDataLength() - sizeof(uint32_t);
+        }
 };
 
 #endif

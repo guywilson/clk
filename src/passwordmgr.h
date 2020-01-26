@@ -8,9 +8,11 @@ class PasswordManager
     public:
         PasswordManager() {}
 
-        uint32_t    getKeyLength();
+        static uint32_t getKeyLength() {
+            return (256 / 8);
+        }
 
-        void        getKey(uint8_t * key, char * szPassword);
+        void            getKey(uint8_t * key, char * szPassword);
 };
 
 #endif

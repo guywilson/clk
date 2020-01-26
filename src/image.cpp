@@ -89,7 +89,7 @@ RGB24BitImage::RGB24BitImage(uint8_t * data, uint32_t dataLength, uint32_t width
 
 RGB24BitImage::~RGB24BitImage()
 {
-    if (isCopied() && _pImageData != NULL) {
+    if (this->_pImageData != NULL) {
         memclr(this->_pImageData, this->_dataLength);
         free(this->_pImageData);
         this->_dataLength = 0;

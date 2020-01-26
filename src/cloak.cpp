@@ -113,18 +113,18 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
 **      data in.
 **
 ******************************************************************************/
-DataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQuality bitsPerByte)
+LengthEncodedDataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQuality bitsPerByte)
 {
-    DataFile *          targetDataFile;
-    uint8_t *           srcImageData;
-    uint32_t            srcImageDataLength;
-    uint8_t *           targetData;
-    uint32_t            targetDataLength;
-    uint8_t             mask;
-    uint8_t             dataLengthBuffer[4] = {0x00, 0x00, 0x00, 0x00};
-    uint8_t             targetBits;
-    uint8_t             targetByte;
-    int                 i, bitCounter, pos, numDataLengthBytes, numDataBytes;
+    LengthEncodedDataFile * targetDataFile;
+    uint8_t *               srcImageData;
+    uint32_t                srcImageDataLength;
+    uint8_t *               targetData;
+    uint32_t                targetDataLength;
+    uint8_t                 mask;
+    uint8_t                 dataLengthBuffer[4] = {0x00, 0x00, 0x00, 0x00};
+    uint8_t                 targetBits;
+    uint8_t                 targetByte;
+    int                     i, bitCounter, pos, numDataLengthBytes, numDataBytes;
 
     srcImageData = srcImage->getImageData();
     srcImageDataLength = srcImage->getDataLength();
@@ -187,7 +187,7 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQuality bitsPerBy
         }
     }
 
-    targetDataFile = new DataFile(targetData, targetDataLength);
+    targetDataFile = new LengthEncodedDataFile(targetData, targetDataLength);
 
     return targetDataFile;
 }

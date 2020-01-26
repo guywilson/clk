@@ -10,19 +10,19 @@
 
 using namespace std;
 
-DataFile * CompressionHelper::compress(DataFile * src)
+LengthEncodedDataFile * CompressionHelper::compress(DataFile * src)
 {
     return compress(src, 5);
 }
 
-DataFile * CompressionHelper::compress(DataFile * src, int compressionLevel)
+LengthEncodedDataFile * CompressionHelper::compress(DataFile * src, int compressionLevel)
 {  
-    DataFile *      compressedDataFile;
-    uint32_t        compressedDataLength;
-    uint8_t *       compressedData;
-    uint32_t        srcDataLength;
-    uint8_t *       srcData;
-    int             rtn;
+    LengthEncodedDataFile * compressedDataFile;
+    uint32_t                compressedDataLength;
+    uint8_t *               compressedData;
+    uint32_t                srcDataLength;
+    uint8_t *               srcData;
+    int                     rtn;
 
     src->getData(&srcData, &srcDataLength);
 
@@ -58,18 +58,18 @@ DataFile * CompressionHelper::compress(DataFile * src, int compressionLevel)
         memcpy(compressedData, srcData, srcDataLength);
     }
 
-    compressedDataFile = new DataFile(compressedData, compressedDataLength);
+    compressedDataFile = new LengthEncodedDataFile(compressedData, compressedDataLength, srcDataLength);
 
     return compressedDataFile;
 }
 
-DataFile * CompressionHelper::inflate(DataFile * src, uint32_t outputDataLength)
+LengthEncodedDataFile * CompressionHelper::inflate(DataFile * src, uint32_t outputDataLength)
 {
-    DataFile *      inflatedDataFile;
-    uint8_t *       inflatedData;
-    uint32_t        srcDataLength;
-    uint8_t *       srcData;
-    int             rtn;
+    LengthEncodedDataFile * inflatedDataFile;
+    uint8_t *               inflatedData;
+    uint32_t                srcDataLength;
+    uint8_t *               srcData;
+    int                     rtn;
 
     src->getData(&srcData, &srcDataLength);
 
@@ -89,7 +89,7 @@ DataFile * CompressionHelper::inflate(DataFile * src, uint32_t outputDataLength)
         throw clk_error(clk_error::buildMsg("Failed to inflate data - %d", rtn), __FILE__, __LINE__);
     }
 
-    inflatedDataFile = new DataFile(inflatedData, outputDataLength);
+    inflatedDataFile = new LengthEncodedDataFile(inflatedData, outputDataLength);
 
     return inflatedDataFile;
 }

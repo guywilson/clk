@@ -41,7 +41,7 @@ DataFile::DataFile(uint8_t * data, uint32_t dataLength)
 
 DataFile::~DataFile()
 {
-    if (isCopied() && this->_data != NULL) {
+    if (this->_data != NULL) {
         memclr(this->_data, this->_dataLength);
         free(this->_data);
         this->_dataLength = 0;
@@ -85,15 +85,10 @@ LengthEncodedDataFile::LengthEncodedDataFile(DataFile & src, uint32_t encodedLen
 
 LengthEncodedDataFile::LengthEncodedDataFile(DataFile * src, uint32_t encodedLength) : DataFile()
 {
-    uint8_t *       data;
     uint8_t *       srcData;
     uint8_t *       newData;
-    uint32_t        dataLength;
     uint32_t        srcDataLength;
     uint32_t        newDataLength;
-
-    data = _getData();
-    dataLength = _getDataLength();
 
     srcData = src->getData();
     srcDataLength = src->getDataLength();
@@ -137,11 +132,43 @@ LengthEncodedDataFile::LengthEncodedDataFile(uint8_t * data, uint32_t dataLength
     this->_setIsCopied(false);
 }
 
-uint32_t LengthEncodedDataFile::getEncodedLength()
+LengthEncodedDataFile::LengthEncodedDataFile(uint8_t * data, uint32_t dataLength) : DataFile()
 {
-    uint32_t        encodedLength;
+    uint8_t *       newData;
 
-    memcpy(&encodedLength, this->_getData(), sizeof(uint32_t));
+    newData = (uint8_t *)malloc(dataLength);
+
+    if (newData == NULL) {
+        throw clk_error("Failed to allocate memory for DataFile", __FILE__, __LINE__);
+    }
+
+    memcpy(newData, data, dataLength);
+
+    this->_setData(newData);
+    this->_setDataLength(dataLength);
+
+    this->_setIsCopied(false);
+}
+
+uint32_t LengthEncodedDataFile::extractLength(uint8_t * data)
+{
+    uint32_t    encodedLength;
+
+    memcpy(&encodedLength, data, sizeof(uint32_t));
 
     return encodedLength;
+}
+
+uint32_t LengthEncodedDataFile::getEncodedLength()
+{
+    return LengthEncodedDataFile::extractLength(this->_getData());
+}
+
+uint8_t * LengthEncodedDataFile::getRawData()
+{
+    uint8_t *       rawData;
+
+    rawData = this->_getData();
+
+    return &rawData[sizeof(uint32_t)];
 }

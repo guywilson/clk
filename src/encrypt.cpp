@@ -42,23 +42,23 @@ uint8_t * EncryptionHelper::generateIV(uint8_t * key, uint32_t keyLength)
     return iv;
 }
 
-DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
+LengthEncodedDataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
-    DataFile *          outputDataFile;
-    gcry_cipher_hd_t	aes_hd;
-    uint8_t *           inputData;
-    uint8_t *           outputData;
-    uint32_t            inputDataLength;
-    uint32_t            outputDataLength;
-    uint32_t            ivLength;
-    uint32_t            blockLength;
-    int                 err;
+    LengthEncodedDataFile * outputDataFile;
+    gcry_cipher_hd_t	    aes_hd;
+    uint8_t *               inputData;
+    uint8_t *               outputData;
+    uint32_t                inputDataLength;
+    uint32_t                outputDataLength;
+    uint32_t                ivLength;
+    uint32_t                blockLength;
+    int                     err;
 
     err = gcry_cipher_open(
     					&aes_hd,
     					GCRY_CIPHER_AES256,
                         GCRY_CIPHER_MODE_CBC,
-                        GCRY_CIPHER_SECURE);
+                        0);
 
     if (err) {
         throw clk_error("Failed to open cipher function", __FILE__, __LINE__);
@@ -125,26 +125,26 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
 							0);//inputDataLength);
 
 	if (err) {
-        throw clk_error(clk_error::buildMsg("Failed to encrypt data - %s [%u]", gcry_strerror(err), err), __FILE__, __LINE__);
+        throw clk_error(clk_error::buildMsg("Failed to encrypt data - %s [%d]", gcry_strerror(err), err), __FILE__, __LINE__);
 	}
 
     gcry_cipher_close(aes_hd);
 
-    outputDataFile = new DataFile(outputData, outputDataLength);
+    outputDataFile = new LengthEncodedDataFile(outputData, outputDataLength, inputDataLength);
 
     return outputDataFile;
 }
 
-DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
+LengthEncodedDataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
-    DataFile *          outputDataFile;
-    gcry_cipher_hd_t	aes_hd;
-    uint8_t *           inputData;
-    uint8_t *           outputData;
-    uint32_t            inputDataLength;
-    uint32_t            outputDataLength;
-    uint32_t            ivLength;
-    int                 err;
+    LengthEncodedDataFile * outputDataFile;
+    gcry_cipher_hd_t	    aes_hd;
+    uint8_t *               inputData;
+    uint8_t *               outputData;
+    uint32_t                inputDataLength;
+    uint32_t                outputDataLength;
+    uint32_t                ivLength;
+    int                     err;
 
     err = gcry_cipher_open(
     					&aes_hd,
@@ -177,6 +177,8 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t * key, uint32
 
     src->getData(&inputData, &inputDataLength);
 
+    printf("Input data length = %u\n", inputDataLength);
+    
 	outputDataLength = inputDataLength;
 
     outputData = (uint8_t *)malloc(outputDataLength);
@@ -193,23 +195,23 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t * key, uint32
 							inputDataLength);
 
 	if (err) {
-        throw clk_error("Failed to decrypt data", __FILE__, __LINE__);
+        throw clk_error(clk_error::buildMsg("Failed to decrypt data - %s [%d]", gcry_strerror(err), err), __FILE__, __LINE__);
 	}
 
     gcry_cipher_close(aes_hd);
 
-    outputDataFile = new DataFile(outputData, outputDataLength);
+    outputDataFile = new LengthEncodedDataFile(outputData, outputDataLength);
 
     return outputDataFile;
 }
 
-DataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
+LengthEncodedDataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
-    DataFile *          outputDataFile;
-    uint8_t *           inputData;
-    uint8_t *           outputData;
-    uint32_t            inputDataLength;
-    uint32_t            outputDataLength;
+    LengthEncodedDataFile * outputDataFile;
+    uint8_t *               inputData;
+    uint8_t *               outputData;
+    uint32_t                inputDataLength;
+    uint32_t                outputDataLength;
 
     src->getData(&inputData, &inputDataLength);
 
@@ -229,12 +231,12 @@ DataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * key, uint32_t 
         outputData[i] = inputData[i] ^ key[i];
     }
 
-    outputDataFile = new DataFile(outputData, outputDataLength);
+    outputDataFile = new LengthEncodedDataFile(outputData, outputDataLength, inputDataLength);
 
     return outputDataFile;
 }
 
-DataFile * EncryptionHelper::decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
+LengthEncodedDataFile * EncryptionHelper::decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
     return encryptXOR(src, key, keyLength);
 }

@@ -10,11 +10,6 @@ extern "C" {
 
 using namespace std;
 
-uint32_t PasswordManager::getKeyLength()
-{
-	return (256 / 8);
-}
-
 void PasswordManager::getKey(uint8_t * key, char * szPassword)
 {
 	uint32_t			pwdLength;
