@@ -30,8 +30,8 @@ PRECOMPILE = @ mkdir -p $(BUILD) $(DEP)
 # postcompile step
 POSTCOMPILE = @ mv -f $(DEP)/$*.Td $(DEP)/$*.d
 
-CPPFLAGS = -c -ggdb -Wall -pedantic -std=c++11
-CFLAGS = -c -ggdb -Wall -pedantic
+CPPFLAGS = -c -Wall -pedantic -std=c++11
+CFLAGS = -c -Wall -pedantic
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP)/$*.Td
 
 # Libraries
@@ -40,7 +40,7 @@ EXTLIBS = -lgcrypt -lz -lpng
 
 COMPILE.cpp = $(CPP) $(CPPFLAGS) $(DEPFLAGS) $(MGFLAGS) -o $@
 COMPILE.c = $(C) $(CFLAGS) $(DEPFLAGS) $(MGFLAGS) -o $@
-LINK.o = $(LINKER) $(STDLIBS) -ggdb -o $@
+LINK.o = $(LINKER) $(STDLIBS) -o $@
 
 CSRCFILES = $(wildcard $(SOURCE)/*.c)
 CPPSRCFILES = $(wildcard $(SOURCE)/*.cpp)

@@ -27,15 +27,12 @@ using namespace std;
 void printUsage()
 {
     cout << "Usage:" << endl;
-    cout << "    cloak -a/e -v -i [infile] -o [outfile] -s [secretfile] -k (keystream file) -b[bits per byte] -l[compression level]" << endl << endl;
-    cout << "    Where: -a = 'add' mode to add 'secretfile' to 'infile'" << endl;
-    cout << "           -e = 'extract' mode to extract 'outfile' from 'infile'" << endl;
-    cout << "           -v = 'verbose' mode, print bitmap header info" << endl;
-    cout << "           -bn = Bits per byte, must be 1, 2 or 4" << endl;
-    cout << "           -ln = Compression level, must be 0 to 9" << endl;
-    cout << "           infile  = an input bitmap" << endl;
-    cout << "           outfile = output bitmap (add mode) or extracted file" << endl;
-    cout << "           secretfile = secret input file to add to 'infile'" << endl << endl;
+    cout << "    clk --help (show this help)" << endl << endl;
+    cout << "    clk --test (self test)" << endl << endl;
+    cout << "    clk [options] source-image" << endl << endl;
+    cout << "    options: -o [output file]" << endl;
+    cout << "             -f [file to cloak]" << endl;
+    cout << "             -q [merge quality] either 1, 2, or 4 bits per byte" << endl << endl;
 	cout.flush();
 }
 
