@@ -10,14 +10,14 @@
 
 using namespace std;
 
-LengthEncodedDataFile * CompressionHelper::compress(DataFile * src)
+DataFile * CompressionHelper::compress(DataFile * src)
 {
     return compress(src, 5);
 }
 
-LengthEncodedDataFile * CompressionHelper::compress(DataFile * src, int compressionLevel)
+DataFile * CompressionHelper::compress(DataFile * src, int compressionLevel)
 {  
-    LengthEncodedDataFile * compressedDataFile;
+    DataFile *              compressedDataFile;
     uint32_t                compressedDataLength;
     uint8_t *               compressedData;
     uint32_t                srcDataLength;
@@ -58,14 +58,14 @@ LengthEncodedDataFile * CompressionHelper::compress(DataFile * src, int compress
         memcpy(compressedData, srcData, srcDataLength);
     }
 
-    compressedDataFile = new LengthEncodedDataFile(compressedData, compressedDataLength, srcDataLength);
+    compressedDataFile = new DataFile(compressedData, compressedDataLength);
 
     return compressedDataFile;
 }
 
-LengthEncodedDataFile * CompressionHelper::inflate(DataFile * src, uint32_t outputDataLength)
+DataFile * CompressionHelper::inflate(DataFile * src, uint32_t outputDataLength)
 {
-    LengthEncodedDataFile * inflatedDataFile;
+    DataFile *              inflatedDataFile;
     uint8_t *               inflatedData;
     uint32_t                srcDataLength;
     uint8_t *               srcData;
@@ -89,7 +89,7 @@ LengthEncodedDataFile * CompressionHelper::inflate(DataFile * src, uint32_t outp
         throw clk_error(clk_error::buildMsg("Failed to inflate data - %d", rtn), __FILE__, __LINE__);
     }
 
-    inflatedDataFile = new LengthEncodedDataFile(inflatedData, outputDataLength);
+    inflatedDataFile = new DataFile(inflatedData, outputDataLength);
 
     return inflatedDataFile;
 }

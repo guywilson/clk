@@ -6,6 +6,14 @@
 #ifndef _INCL_CLOAK
 #define _INCL_CLOAK
 
+typedef struct __attribute__((__packed__))
+{
+    uint32_t        originalLength;
+    uint32_t        encryptedLength;
+    uint32_t        compressedLength;
+}
+clk_length_struct;
+
 class CloakHelper
 {
     public:
@@ -16,7 +24,7 @@ class CloakHelper
         };
 
     private:
-        uint8_t             getBitMask(MergeQuality bitsPerByte) {
+        uint8_t getBitMask(MergeQuality bitsPerByte) {
             uint8_t mask = 0x00;
 
             for (int i = 0;i < bitsPerByte;i++) {
@@ -29,8 +37,16 @@ class CloakHelper
     public:
         CloakHelper() {}
 
-        RGB24BitImage *         merge(RGB24BitImage * srcImage, DataFile * srcDataFile, MergeQuality bitsPerByte);
-        LengthEncodedDataFile * extract(RGB24BitImage * srcImage, MergeQuality bitsPerByte);
+        RGB24BitImage * merge(
+                            RGB24BitImage * srcImage, 
+                            DataFile * srcDataFile, 
+                            clk_length_struct * lengthStruct, 
+                            MergeQuality bitsPerByte);
+
+        DataFile * extract(
+                            RGB24BitImage * srcImage, 
+                            clk_length_struct * clk_length_struct,
+                            MergeQuality bitsPerByte);
 };
 
 #endif

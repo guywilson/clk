@@ -10,10 +10,10 @@ class CompressionHelper
     public:
         CompressionHelper() {}
 
-        LengthEncodedDataFile * compress(DataFile * src);
-        LengthEncodedDataFile * compress(DataFile * src, int compressionLevel);
+        DataFile * compress(DataFile * src);
+        DataFile * compress(DataFile * src, int compressionLevel);
 
-        LengthEncodedDataFile * inflate(DataFile * src, uint32_t outputDataLength);
+        DataFile * inflate(DataFile * src, uint32_t outputDataLength);
 };
 
 #endif

@@ -236,6 +236,7 @@ int main(int argc, char **argv)
         EncryptionHelper encryptionHelper;
         CompressionHelper compressionHelper;
         CloakHelper cloakHelper;
+        clk_length_struct ls;
 
         keyLength = PasswordManager::getKeyLength();
 
@@ -245,6 +246,9 @@ int main(int argc, char **argv)
             throw clk_error("Failed to allocate memory for key", __FILE__, __LINE__);
         }
 
+        /*
+        ** Get the key...
+        */
         getUserKey(key);
 
         if (isMerge) {
@@ -259,7 +263,7 @@ int main(int argc, char **argv)
             **
             ** Output is encoded with the original file length
             */
-            LengthEncodedDataFile * encryptedInputFile = 
+            DataFile * encryptedInputFile = 
                 encryptionHelper.encrypt(inputFile, EncryptionHelper::AES_256, key, keyLength);
 
             /*
@@ -267,15 +271,19 @@ int main(int argc, char **argv)
             **
             ** Output is encoded with the file length from step 1
             */
-            LengthEncodedDataFile * compressedInputFile = 
+            DataFile * compressedInputFile = 
                 compressionHelper.compress(encryptedInputFile, 6);
 
             /*
             ** Step 3: Merge the encrypted & compressed data with the 
             ** source image...
             */
+            ls.originalLength = inputFile->getDataLength();
+            ls.encryptedLength = encryptedInputFile->getDataLength();
+            ls.compressedLength = compressedInputFile->getDataLength();
+
             RGB24BitImage * outputImage = 
-                cloakHelper.merge(inputImage, compressedInputFile, quality);
+                cloakHelper.merge(inputImage, compressedInputFile, &ls, quality);
 
             ImageOutputStream os(outputImageName);
 
@@ -295,18 +303,16 @@ int main(int argc, char **argv)
             ** The extracted data file should be encoded with the 
             ** un-compressed length
             */
-            LengthEncodedDataFile * encodedOutputFile = 
-                cloakHelper.extract(inputImage, quality);
+            DataFile * encodedOutputFile = 
+                cloakHelper.extract(inputImage, &ls, quality);
 
             /*
             ** Step 2: Inflate the input data file...
             **
             ** Output is encoded with the unencrypted length
             */
-            printf("Output length = %u\n", encodedOutputFile->getEncodedLength());
-                       
-            LengthEncodedDataFile * encryptedOutputFile = 
-                compressionHelper.inflate(encodedOutputFile, encodedOutputFile->getEncodedLength());
+            DataFile * encryptedOutputFile = 
+                compressionHelper.inflate(encodedOutputFile, ls.encryptedLength);
 
             /*
             ** Step 3: Decrypt the input data file
@@ -315,7 +321,7 @@ int main(int argc, char **argv)
             ** encoded with the original file length
             */
             DataFile * outputFile = 
-                encryptionHelper.decrypt(encryptedOutputFile, EncryptionHelper::AES_256, key, keyLength);
+                encryptionHelper.decrypt(encryptedOutputFile, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
 
             FileOutputStream fos(outputFileName);
 

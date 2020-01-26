@@ -33,11 +33,9 @@ bool test_compress()
 
         CompressionHelper c;
 
-        LengthEncodedDataFile * compressed = c.compress(src, 7);
+        DataFile * compressed = c.compress(src, 7);
 
-        DataFile * df = new DataFile(compressed->getRawData(), compressed->getRawDataLength());
-
-        DataFile * inflated = c.inflate(df, srcDataLength);
+        DataFile * inflated = c.inflate(compressed, srcDataLength);
 
         inflated->getData(&inflatedData, &inflatedDataLength);
 

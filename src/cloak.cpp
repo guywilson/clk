@@ -17,7 +17,7 @@
 **      value supplied.
 **
 ******************************************************************************/
-RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataFile, MergeQuality bitsPerByte)
+RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataFile, clk_length_struct * lengthStruct, MergeQuality bitsPerByte)
 {
     RGB24BitImage *     targetImage;
     uint8_t *           srcImageData;
@@ -26,6 +26,7 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     uint32_t            targetImageDataLength;
     uint8_t *           secretData;
     uint32_t            secretDataLength;
+    uint8_t             lengthStructBuffer[sizeof(clk_length_struct)];
     uint32_t            imageCapacity;
     uint8_t             mask;
     uint8_t             dataBits;
@@ -37,8 +38,10 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     secretData = srcDataFile->getData();
     secretDataLength = srcDataFile->getDataLength();
 
-    numLengthBytes = sizeof(uint32_t) * (8 / bitsPerByte);
+    numLengthBytes = sizeof(clk_length_struct) * (8 / bitsPerByte);
     numDataBytes = secretDataLength * (8 / bitsPerByte);
+
+    memcpy(lengthStructBuffer, lengthStruct, sizeof(clk_length_struct));
 
     imageCapacity = (srcImageDataLength / (8 / bitsPerByte) - numLengthBytes);
 
@@ -67,13 +70,19 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
 //    printf("Secret data length = %u [0x%04X], mask = 0x%02X\n", secretDataLength, secretDataLength, mask);
 
     bitCounter = 0;
+    pos = 0;
 
     for (i = 0;i < numLengthBytes;i++) {
-        dataBits = (uint8_t)((secretDataLength >> bitCounter) & mask);
+        dataBits = (lengthStructBuffer[pos] >> bitCounter) & mask;
         targetImageData[i] = (srcImageData[i] & ~mask) | dataBits;
 //        printf("data bits = 0x%02X, target image byte = 0x%02X, source image byte = 0x%02X\n", dataBits, targetImageData[i], srcImageData[i]);
 
         bitCounter += bitsPerByte;
+
+        if (bitCounter == 8) {
+            bitCounter = 0;
+            pos++;
+        }
     }
 
     bitCounter = 0;
@@ -113,18 +122,18 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
 **      data in.
 **
 ******************************************************************************/
-LengthEncodedDataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQuality bitsPerByte)
+DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * lengthStruct, MergeQuality bitsPerByte)
 {
-    LengthEncodedDataFile * targetDataFile;
+    DataFile *              targetDataFile;
     uint8_t *               srcImageData;
     uint32_t                srcImageDataLength;
     uint8_t *               targetData;
     uint32_t                targetDataLength;
     uint8_t                 mask;
-    uint8_t                 dataLengthBuffer[4] = {0x00, 0x00, 0x00, 0x00};
+    uint8_t                 dataLengthBuffer[sizeof(clk_length_struct)];
     uint8_t                 targetBits;
     uint8_t                 targetByte;
-    int                     i, bitCounter, pos, numDataLengthBytes, numDataBytes;
+    int                     i, bitCounter, pos, numLengthBytes, numDataBytes;
 
     srcImageData = srcImage->getImageData();
     srcImageDataLength = srcImage->getDataLength();
@@ -136,13 +145,13 @@ LengthEncodedDataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQual
     targetBits = 0x00;
     targetByte = 0x00;
 
-    numDataLengthBytes = 4 * 8 / bitsPerByte;
+    numLengthBytes = sizeof(clk_length_struct) * (8 / bitsPerByte);
 
-    for (i = 0;i < numDataLengthBytes;i++) {
+    memset(dataLengthBuffer, 0, sizeof(clk_length_struct));
+
+    for (i = 0;i < numLengthBytes;i++) {
         targetBits = srcImageData[i] & mask;
         targetByte += targetBits << bitCounter;
-
-//        printf("Image byte = 0x%02X, buffer[%d] = 0x%02X\n", srcImageData[i], pos, targetByte);
 
         bitCounter += bitsPerByte;
 
@@ -154,9 +163,9 @@ LengthEncodedDataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQual
         }
     }
 
-    memcpy(&targetDataLength, dataLengthBuffer, 4);
+    memcpy(lengthStruct, dataLengthBuffer, sizeof(clk_length_struct));
 
-//    printf("Target data length = %u\n", targetDataLength);
+    targetDataLength = lengthStruct->compressedLength;
 
     targetData = (uint8_t *)malloc(targetDataLength);
 
@@ -171,11 +180,9 @@ LengthEncodedDataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQual
 
     numDataBytes = targetDataLength * (8 / bitsPerByte);
 
-    for (i = numDataLengthBytes;i < (numDataBytes + numDataLengthBytes);i++) {
+    for (i = numLengthBytes;i < (numDataBytes + numLengthBytes);i++) {
         targetBits = srcImageData[i] & mask;
         targetByte += targetBits << bitCounter;
-
-//        printf("src image byte = 0x%02X, target data[%d] = 0x%02X\n", srcImageData[i], pos, targetByte);
 
         bitCounter += bitsPerByte;
 
@@ -187,7 +194,7 @@ LengthEncodedDataFile * CloakHelper::extract(RGB24BitImage * srcImage, MergeQual
         }
     }
 
-    targetDataFile = new LengthEncodedDataFile(targetData, targetDataLength);
+    targetDataFile = new DataFile(targetData, targetDataLength);
 
     return targetDataFile;
 }

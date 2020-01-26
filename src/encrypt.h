@@ -12,11 +12,11 @@ class EncryptionHelper
     private:
         uint8_t *               generateIV(uint8_t * key, uint32_t keyLength);
 
-        LengthEncodedDataFile * encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength);
-        LengthEncodedDataFile * decryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength);
+        DataFile *              encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength);
+        DataFile *              decryptAES256(DataFile * src, uint32_t decryptedDataLength, uint8_t * key, uint32_t keyLength);
 
-        LengthEncodedDataFile * encryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength);
-        LengthEncodedDataFile * decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength);
+        DataFile *              encryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength);
+        DataFile *              decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength);
 
     public:
         EncryptionHelper() {}
@@ -26,7 +26,7 @@ class EncryptionHelper
             XOR
         };
 
-        LengthEncodedDataFile * encrypt(DataFile * src, Algorithm alg, uint8_t * key, uint32_t keyLength) {
+        DataFile * encrypt(DataFile * src, Algorithm alg, uint8_t * key, uint32_t keyLength) {
             switch (alg) {
                 case AES_256:
                     return encryptAES256(src, key, keyLength);
@@ -39,10 +39,10 @@ class EncryptionHelper
             }
         }
 
-        LengthEncodedDataFile * decrypt(DataFile * src, Algorithm alg, uint8_t * key, uint32_t keyLength) {
+        DataFile * decrypt(DataFile * src, Algorithm alg, uint32_t decryptedDataLength, uint8_t * key, uint32_t keyLength) {
             switch (alg) {
                 case AES_256:
-                    return decryptAES256(src, key, keyLength);
+                    return decryptAES256(src, decryptedDataLength, key, keyLength);
 
                 case XOR:
                     return decryptXOR(src, key, keyLength);

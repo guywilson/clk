@@ -18,8 +18,6 @@ bool test_merge()
     string          imageOutputName = "flowers_copy.png";
     string          secretFileName = "LICENSE";
     string          outputFileName = "LICENSE.test_merge.copy";
-    // string          secretFileName = "flowers.bmp";
-    // string          outputFileName = "flowers.test_merge.bmp";
 
     cout << "In test_merge()" << endl;
 
@@ -40,9 +38,15 @@ bool test_merge()
         DataFile * secretFile = fis.read();
         fis.close();
 
+        clk_length_struct ls;
+
+        ls.originalLength = secretFile->getDataLength();
+        ls.compressedLength = secretFile->getDataLength();
+        ls.encryptedLength = secretFile->getDataLength();
+
         CloakHelper ch;
 
-        RGB24BitImage * outputImage = ch.merge(img, secretFile, ch.High);
+        RGB24BitImage * outputImage = ch.merge(img, secretFile, &ls, ch.High);
 
         ImageOutputStream os(imageOutputName);
 
@@ -50,7 +54,7 @@ bool test_merge()
         os.write(outputImage);
         os.close();
 
-        DataFile * outputDataFile = ch.extract(outputImage, ch.High);
+        DataFile * outputDataFile = ch.extract(outputImage, &ls, ch.High);
 
         FileOutputStream fos(outputFileName);
 

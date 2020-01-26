@@ -42,9 +42,9 @@ uint8_t * EncryptionHelper::generateIV(uint8_t * key, uint32_t keyLength)
     return iv;
 }
 
-LengthEncodedDataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
+DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
-    LengthEncodedDataFile * outputDataFile;
+    DataFile *              outputDataFile;
     gcry_cipher_hd_t	    aes_hd;
     uint8_t *               inputData;
     uint8_t *               outputData;
@@ -130,14 +130,14 @@ LengthEncodedDataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t 
 
     gcry_cipher_close(aes_hd);
 
-    outputDataFile = new LengthEncodedDataFile(outputData, outputDataLength, inputDataLength);
+    outputDataFile = new DataFile(outputData, outputDataLength);
 
     return outputDataFile;
 }
 
-LengthEncodedDataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
+DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint32_t decryptedDataLength, uint8_t * key, uint32_t keyLength)
 {
-    LengthEncodedDataFile * outputDataFile;
+    DataFile *              outputDataFile;
     gcry_cipher_hd_t	    aes_hd;
     uint8_t *               inputData;
     uint8_t *               outputData;
@@ -176,10 +176,10 @@ LengthEncodedDataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t 
     }
 
     src->getData(&inputData, &inputDataLength);
-
-    printf("Input data length = %u\n", inputDataLength);
     
 	outputDataLength = inputDataLength;
+
+    printf("Input data length = %u, output data length = %u\n", inputDataLength, outputDataLength);
 
     outputData = (uint8_t *)malloc(outputDataLength);
 
@@ -200,14 +200,14 @@ LengthEncodedDataFile * EncryptionHelper::decryptAES256(DataFile * src, uint8_t 
 
     gcry_cipher_close(aes_hd);
 
-    outputDataFile = new LengthEncodedDataFile(outputData, outputDataLength);
+    outputDataFile = new DataFile(outputData, decryptedDataLength);
 
     return outputDataFile;
 }
 
-LengthEncodedDataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
+DataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
-    LengthEncodedDataFile * outputDataFile;
+    DataFile *              outputDataFile;
     uint8_t *               inputData;
     uint8_t *               outputData;
     uint32_t                inputDataLength;
@@ -231,12 +231,12 @@ LengthEncodedDataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * k
         outputData[i] = inputData[i] ^ key[i];
     }
 
-    outputDataFile = new LengthEncodedDataFile(outputData, outputDataLength, inputDataLength);
+    outputDataFile = new DataFile(outputData, outputDataLength);
 
     return outputDataFile;
 }
 
-LengthEncodedDataFile * EncryptionHelper::decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
+DataFile * EncryptionHelper::decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
     return encryptXOR(src, key, keyLength);
 }

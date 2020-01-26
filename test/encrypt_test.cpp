@@ -20,8 +20,8 @@ bool test_encrypt()
     uint8_t *       decryptedData;
     uint32_t        decryptedDataLength;
 
-    LengthEncodedDataFile * encryptedDf;
-    LengthEncodedDataFile * decryptedDf;
+    DataFile * encryptedDf;
+    DataFile * decryptedDf;
 
     cout << "In test_encrypt()" << endl;
 
@@ -40,9 +40,7 @@ bool test_encrypt()
 
         encryptedDf = eh->encrypt(src, eh->AES_256, (uint8_t *)key, len);
 
-        DataFile * df = new DataFile(encryptedDf->getRawData(), encryptedDf->getRawDataLength());
-
-        decryptedDf = eh->decrypt(df, eh->AES_256, (uint8_t *)key, len);
+        decryptedDf = eh->decrypt(encryptedDf, eh->AES_256, src->getDataLength(), (uint8_t *)key, len);
 
         src->getData(&srcData, &srcDataLength);
         
