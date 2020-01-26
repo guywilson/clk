@@ -27,7 +27,10 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     uint8_t *           secretData;
     uint32_t            secretDataLength;
     uint8_t             lengthStructBuffer[sizeof(clk_length_struct)];
+    uint8_t             xorBuffer[sizeof(uint32_t) * 3];
     uint32_t            imageCapacity;
+    uint32_t            width;
+    uint32_t            height;
     uint8_t             mask;
     uint8_t             dataBits;
     int                 i, pos, bitCounter, numLengthBytes, numDataBytes;
@@ -41,7 +44,21 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     numLengthBytes = sizeof(clk_length_struct) * (8 / bitsPerByte);
     numDataBytes = secretDataLength * (8 / bitsPerByte);
 
+    width = srcImage->getWidth();
+    height = srcImage->getHeight();
+
+    memcpy(&xorBuffer[0], &srcImageDataLength, sizeof(uint32_t));
+    memcpy(&xorBuffer[4], &width, sizeof(uint32_t));
+    memcpy(&xorBuffer[8], &height, sizeof(uint32_t));
+
     memcpy(lengthStructBuffer, lengthStruct, sizeof(clk_length_struct));
+
+    /*
+    ** XOR the length struct with the image data length, width & height...
+    */
+    for (i = 0;i < (sizeof(uint32_t) * 3);i++) {
+        lengthStructBuffer[i] = lengthStructBuffer[i] ^ xorBuffer[i];
+    }
 
     imageCapacity = (srcImageDataLength / (8 / bitsPerByte) - numLengthBytes);
 
@@ -67,15 +84,12 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
 
     mask = getBitMask(bitsPerByte);
 
-//    printf("Secret data length = %u [0x%04X], mask = 0x%02X\n", secretDataLength, secretDataLength, mask);
-
     bitCounter = 0;
     pos = 0;
 
     for (i = 0;i < numLengthBytes;i++) {
         dataBits = (lengthStructBuffer[pos] >> bitCounter) & mask;
         targetImageData[i] = (srcImageData[i] & ~mask) | dataBits;
-//        printf("data bits = 0x%02X, target image byte = 0x%02X, source image byte = 0x%02X\n", dataBits, targetImageData[i], srcImageData[i]);
 
         bitCounter += bitsPerByte;
 
@@ -92,8 +106,6 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
         dataBits = (secretData[pos] >> bitCounter) & mask;
         targetImageData[i] = (srcImageData[i] & ~mask) | dataBits;
 
-//        printf("data bits = %X, target image byte = 0x%02X, source image byte = 0x%02X\n", dataBits, targetImageData[i], srcImageData[i]);
-
         bitCounter += bitsPerByte;
 
         if (bitCounter == 8) {
@@ -103,10 +115,10 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     }
 
     if (srcImage->getFormat() == PNGImage) {
-        targetImage = new PNG(targetImageData, targetImageDataLength, srcImage->getWidth(), srcImage->getHeight());
+        targetImage = new PNG(targetImageData, targetImageDataLength, width, height);
     }
     else {
-        targetImage = new Bitmap(targetImageData, targetImageDataLength, srcImage->getWidth(), srcImage->getHeight());
+        targetImage = new Bitmap(targetImageData, targetImageDataLength, width, height);
     }
 
     return targetImage;
@@ -129,8 +141,11 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
     uint32_t                srcImageDataLength;
     uint8_t *               targetData;
     uint32_t                targetDataLength;
+    uint32_t                width;
+    uint32_t                height;
     uint8_t                 mask;
-    uint8_t                 dataLengthBuffer[sizeof(clk_length_struct)];
+    uint8_t                 lengthStructBuffer[sizeof(clk_length_struct)];
+    uint8_t                 xorBuffer[sizeof(uint32_t) * 3];
     uint8_t                 targetBits;
     uint8_t                 targetByte;
     int                     i, bitCounter, pos, numLengthBytes, numDataBytes;
@@ -147,7 +162,14 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
 
     numLengthBytes = sizeof(clk_length_struct) * (8 / bitsPerByte);
 
-    memset(dataLengthBuffer, 0, sizeof(clk_length_struct));
+    width = srcImage->getWidth();
+    height = srcImage->getHeight();
+
+    memcpy(&xorBuffer[0], &srcImageDataLength, sizeof(uint32_t));
+    memcpy(&xorBuffer[4], &width, sizeof(uint32_t));
+    memcpy(&xorBuffer[8], &height, sizeof(uint32_t));
+
+    memset(lengthStructBuffer, 0, sizeof(clk_length_struct));
 
     for (i = 0;i < numLengthBytes;i++) {
         targetBits = srcImageData[i] & mask;
@@ -158,12 +180,19 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
         if (bitCounter == 8) {
             bitCounter = 0;
 
-            dataLengthBuffer[pos++] = targetByte;
+            lengthStructBuffer[pos++] = targetByte;
             targetByte = 0x00;
         }
     }
 
-    memcpy(lengthStruct, dataLengthBuffer, sizeof(clk_length_struct));
+    /*
+    ** XOR the length struct with the image data length, width & height...
+    */
+    for (i = 0;i < (sizeof(uint32_t) * 3);i++) {
+        lengthStructBuffer[i] = lengthStructBuffer[i] ^ xorBuffer[i];
+    }
+
+    memcpy(lengthStruct, lengthStructBuffer, sizeof(clk_length_struct));
 
     targetDataLength = lengthStruct->compressedLength;
 

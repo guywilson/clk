@@ -64,8 +64,6 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
         throw clk_error("Failed to open cipher function", __FILE__, __LINE__);
     }
 
-    printf("Key length = %u\n", keyLength * 8);
-
     err = gcry_cipher_setkey(
     					aes_hd,
     					(const void *)key,
@@ -92,8 +90,6 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
         throw clk_error("Faied to get algorithm block length", __FILE__, __LINE__);
     }
 
-    printf("Block length = %u\n", blockLength);
-
     src->getData(&inputData, &inputDataLength);
 
     if (inputData == NULL) {
@@ -106,8 +102,6 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
 	else {
 		outputDataLength = inputDataLength + (blockLength - (inputDataLength % blockLength));
 	}
-
-    printf("Input len %u, Output len %u\n", inputDataLength, outputDataLength);
 
     outputData = (uint8_t *)malloc(outputDataLength);
 
@@ -178,8 +172,6 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint32_t decryptedDat
     src->getData(&inputData, &inputDataLength);
     
 	outputDataLength = inputDataLength;
-
-    printf("Input data length = %u, output data length = %u\n", inputDataLength, outputDataLength);
 
     outputData = (uint8_t *)malloc(outputDataLength);
 

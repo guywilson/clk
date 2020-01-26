@@ -220,9 +220,6 @@ int main(int argc, char **argv)
 
     inputImageName = strdup(argv[argc - 1]);
 
-    cout << "Input image: " << inputImageName << " input file: " << inputFileName << " output image name: " << outputImageName << endl;
-    cout.flush();
-
     try {
         ImageInputStream is(inputImageName);
 

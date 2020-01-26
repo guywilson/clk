@@ -144,8 +144,6 @@ PNG * ImageInputStream::_readPNG()
 
     dataLength = width * height * channels;
 
-//    printf("PNG width %u, height %u, channels %d, datalen %u\n", width, height, channels, dataLength);
-
 	data = (uint8_t *)malloc(dataLength);
 	
 	if (data == NULL) {
@@ -216,8 +214,6 @@ Bitmap * ImageInputStream::_readBMP()
 	else {
         throw clk_error("Invalid bitmap type", __FILE__, __LINE__);
 	}
-
-//    printf("readBMP() width %u, height %u, datalen %u\n", dibHeader.width, dibHeader.height, dibHeader.dataLength);
 
     if (dibHeader.bitsPerPixel != 24) {
         throw clk_error("Image must be 24-bit", __FILE__, __LINE__);
@@ -340,8 +336,6 @@ void ImageOutputStream::_writePNG(PNG * png)
     png->getImageData(&data, &dataLength);
     width = png->getWidth();
     height = png->getHeight();
-
-//    printf("writePNG() Data len %u, width %u, height %u\n", dataLength, width, height);
 
     /* set the image parameters appropriately */
 
