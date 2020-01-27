@@ -154,6 +154,161 @@ int getUserKey(uint8_t * key)
 	return 0;
 }
 
+void hide(
+        string & inputImageName, 
+        string & inputFileName, 
+        string & outputImageName, 
+        CloakHelper::MergeQuality quality, 
+        ImageFormat outputImageFormat, 
+        uint8_t * key,
+        uint32_t keyLength)
+{
+    EncryptionHelper    encryptionHelper;
+    CompressionHelper   compressionHelper;
+    CloakHelper         cloakHelper;
+    clk_length_struct   ls;
+
+    try {
+        ImageInputStream is(inputImageName);
+
+        /*
+        ** Open the input image...
+        */
+        is.open();
+        RGB24BitImage * inputImage = is.read();
+        is.close();
+
+        FileInputStream fis(inputFileName);
+
+        fis.open();
+        DataFile * inputFile = fis.read();
+        fis.close();
+
+        /*
+        ** Step 1: Encrypt the input (secret) file...
+        */
+        DataFile * encryptedInputFile = 
+            encryptionHelper.encrypt(inputFile, EncryptionHelper::AES_256, key, keyLength);
+
+        /*
+        ** Step 2: Compress the encrypted file...
+        */
+        DataFile * compressedInputFile = 
+            compressionHelper.compress(encryptedInputFile, 6);
+
+        /*
+        ** Setup the length structure...
+        */
+        ls.originalLength = inputFile->getDataLength();
+        ls.encryptedLength = encryptedInputFile->getDataLength();
+        ls.compressedLength = compressedInputFile->getDataLength();
+
+        cout << "Merge: Original file len: " << ls.originalLength << ", encrypted len: " << ls.encryptedLength << ", compressed len: " << ls.compressedLength << endl;
+
+        /*
+        ** Step 3: Merge the encrypted & compressed data with the 
+        ** source image...
+        */
+        RGB24BitImage * mergedImage = 
+            cloakHelper.merge(inputImage, compressedInputFile, &ls, quality);
+
+        ImageOutputStream os(outputImageName);
+
+        if (outputImageFormat == PNGImage && mergedImage->getFormat() == BitmapImage) {
+            RGB24BitImage * outImg = new PNG((Bitmap *)mergedImage);
+
+            os.open();
+            os.write(outImg);
+            os.close();
+
+            delete outImg;
+        }
+        else if (outputImageFormat == BitmapImage && mergedImage->getFormat() == PNGImage) {
+            RGB24BitImage * outImg = new Bitmap((PNG *)mergedImage);
+
+            os.open();
+            os.write(outImg);
+            os.close();
+
+            delete outImg;
+        }
+        else {
+            os.open();
+            os.write(mergedImage);
+            os.close();
+        }
+
+        delete inputFile;
+        delete encryptedInputFile;
+        delete compressedInputFile;
+        delete mergedImage;
+        delete inputImage;
+    }
+    catch (clk_error & e) {
+        cout << "Failed to hide file " << inputFileName << " in image file " << inputImageName << " - " << e.what() << endl;
+        throw e;
+    }
+}
+
+void reveal(
+        string & inputImageName, 
+        string & outputFileName, 
+        CloakHelper::MergeQuality quality, 
+        uint8_t * key,
+        uint32_t keyLength)
+{
+    EncryptionHelper    encryptionHelper;
+    CompressionHelper   compressionHelper;
+    CloakHelper         cloakHelper;
+    clk_length_struct   ls;
+
+    try {
+        ImageInputStream is(inputImageName);
+
+        /*
+        ** Open the input image...
+        */
+        is.open();
+        RGB24BitImage * inputImage = is.read();
+        is.close();
+
+        /*
+        ** Step 1: Extract the data file from the source image...
+        */
+        DataFile * encodedOutputFile = 
+            cloakHelper.extract(inputImage, &ls, quality);
+
+        cout << "Extract: Original file len: " << ls.originalLength << ", encrypted len: " << ls.encryptedLength << ", compressed len: " << ls.compressedLength << endl;
+
+        /*
+        ** Step 2: Inflate the input data file...
+        */
+        DataFile * encryptedOutputFile = 
+            compressionHelper.inflate(encodedOutputFile, ls.encryptedLength);
+
+        /*
+        ** Step 3: Decrypt the input data file
+        */
+        DataFile * outputFile = 
+            encryptionHelper.decrypt(encryptedOutputFile, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
+
+        FileOutputStream fos(outputFileName);
+
+        fos.open();
+        fos.write(outputFile);
+        fos.close();
+
+        delete encodedOutputFile;
+        delete encryptedOutputFile;
+        delete outputFile;
+        delete inputImage;
+    }
+    catch (clk_error & e) {
+        cout << "Failed to reveal file from image file " << inputImageName << " - " << e.what() << endl;
+        throw e;
+    }
+}
+
 int main(int argc, char **argv)
 {
     int                         i;
@@ -249,20 +404,6 @@ int main(int argc, char **argv)
     inputImageName = strdup(argv[argc - 1]);
 
     try {
-        ImageInputStream is(inputImageName);
-
-        /*
-        ** Open the input image...
-        */
-        is.open();
-        RGB24BitImage * inputImage = is.read();
-        is.close();
-
-        EncryptionHelper encryptionHelper;
-        CompressionHelper compressionHelper;
-        CloakHelper cloakHelper;
-        clk_length_struct ls;
-
         keyLength = PasswordManager::getKeyByteLength();
 
         key = (uint8_t *)malloc(keyLength);
@@ -277,114 +418,25 @@ int main(int argc, char **argv)
         getUserKey(key);
 
         if (isMerge) {
-            FileInputStream fis(inputFileName);
-
-            fis.open();
-            DataFile * inputFile = fis.read();
-            fis.close();
-
-            /*
-            ** Step 1: Encrypt the input (secret) file...
-            */
-            DataFile * encryptedInputFile = 
-                encryptionHelper.encrypt(inputFile, EncryptionHelper::AES_256, key, keyLength);
-
-            /*
-            ** Step 2: Compress the encrypted file...
-            */
-            DataFile * compressedInputFile = 
-                compressionHelper.compress(encryptedInputFile, 6);
-
-            /*
-            ** Setup the length structure...
-            */
-            ls.originalLength = inputFile->getDataLength();
-            ls.encryptedLength = encryptedInputFile->getDataLength();
-            ls.compressedLength = compressedInputFile->getDataLength();
-
-            cout << "Merge: Original file len: " << ls.originalLength << ", encrypted len: " << ls.encryptedLength << ", compressed len: " << ls.compressedLength << endl;
-
-            /*
-            ** Step 3: Merge the encrypted & compressed data with the 
-            ** source image...
-            */
-            RGB24BitImage * mergedImage = 
-                cloakHelper.merge(inputImage, compressedInputFile, &ls, quality);
-
-            ImageOutputStream os(outputImageName);
-
-            if (outputImageFmt == PNGImage && mergedImage->getFormat() == BitmapImage) {
-                RGB24BitImage * outImg = new PNG((Bitmap *)mergedImage);
-
-                os.open();
-                os.write(outImg);
-                os.close();
-
-                delete outImg;
-            }
-            else if (outputImageFmt == BitmapImage && mergedImage->getFormat() == PNGImage) {
-                RGB24BitImage * outImg = new Bitmap((PNG *)mergedImage);
-
-                os.open();
-                os.write(outImg);
-                os.close();
-
-                delete outImg;
-            }
-            else {
-                os.open();
-                os.write(mergedImage);
-                os.close();
-            }
-
-            delete inputFile;
-            delete encryptedInputFile;
-            delete compressedInputFile;
-            delete mergedImage;
+            hide(
+                inputImageName, 
+                inputFileName, 
+                outputImageName, 
+                quality, 
+                outputImageFmt, 
+                key, 
+                keyLength);
         }
         else {
-            /*
-            ** Step 1: Extract the data file from the source image...
-            **
-            ** The extracted data file should be encoded with the 
-            ** un-compressed length
-            */
-            DataFile * encodedOutputFile = 
-                cloakHelper.extract(inputImage, &ls, quality);
-
-            cout << "Extract: Original file len: " << ls.originalLength << ", encrypted len: " << ls.encryptedLength << ", compressed len: " << ls.compressedLength << endl;
-
-            /*
-            ** Step 2: Inflate the input data file...
-            **
-            ** Output is encoded with the unencrypted length
-            */
-            DataFile * encryptedOutputFile = 
-                compressionHelper.inflate(encodedOutputFile, ls.encryptedLength);
-
-            /*
-            ** Step 3: Decrypt the input data file
-            **
-            ** Output is the raw data that was merged with the image, data is 
-            ** encoded with the original file length
-            */
-            DataFile * outputFile = 
-                encryptionHelper.decrypt(encryptedOutputFile, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
-
-            FileOutputStream fos(outputFileName);
-
-            fos.open();
-            fos.write(outputFile);
-            fos.close();
-
-            delete encodedOutputFile;
-            delete encryptedOutputFile;
-            delete outputFile;
+            reveal(
+                inputImageName, 
+                outputFileName, 
+                quality, 
+                key, 
+                keyLength);
         }
 
         free(key);
-
-        delete inputImage;
 
         cout << "Operation completed successfully..." << endl << endl;
     }
