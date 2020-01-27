@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "clk_error.h"
+#include "passwordmgr.h"
 #include "cloak.h"
 #include "image.h"
 #include "datafile.h"
@@ -28,6 +29,7 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     uint32_t            secretDataLength;
     uint8_t             lengthStructBuffer[sizeof(clk_length_struct)];
     uint8_t             xorBuffer[sizeof(uint32_t) * 3];
+    uint8_t             key[128 / 8];
     uint32_t            imageCapacity;
     uint32_t            width;
     uint32_t            height;
@@ -47,17 +49,30 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     width = srcImage->getWidth();
     height = srcImage->getHeight();
 
+    /*
+    ** Copy the image data len + width + height (12 bytes total)
+    ** to xorBuffer...
+    */
     memcpy(&xorBuffer[0], &srcImageDataLength, sizeof(uint32_t));
     memcpy(&xorBuffer[4], &width, sizeof(uint32_t));
     memcpy(&xorBuffer[8], &height, sizeof(uint32_t));
 
+    /*
+    ** Get the 128-bit (16 byte) hash of the xor buffer...
+    */
+    PasswordManager mgr(PasswordManager::Low);
+    mgr.getKey(key, xorBuffer, sizeof(xorBuffer));
+
+    /*
+    ** Pop the length struct into a buffer...
+    */
     memcpy(lengthStructBuffer, lengthStruct, sizeof(clk_length_struct));
 
     /*
-    ** XOR the length struct with the image data length, width & height...
+    ** XOR the length struct with the first 12 bytes of the key...
     */
     for (i = 0;i < (sizeof(uint32_t) * 3);i++) {
-        lengthStructBuffer[i] = lengthStructBuffer[i] ^ xorBuffer[i];
+        lengthStructBuffer[i] = lengthStructBuffer[i] ^ key[i];
     }
 
     imageCapacity = (srcImageDataLength / (8 / bitsPerByte) - numLengthBytes);
@@ -146,6 +161,7 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
     uint8_t                 mask;
     uint8_t                 lengthStructBuffer[sizeof(clk_length_struct)];
     uint8_t                 xorBuffer[sizeof(uint32_t) * 3];
+    uint8_t                 key[128 / 8];
     uint8_t                 targetBits;
     uint8_t                 targetByte;
     int                     i, bitCounter, pos, numLengthBytes, numDataBytes;
@@ -165,10 +181,6 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
     width = srcImage->getWidth();
     height = srcImage->getHeight();
 
-    memcpy(&xorBuffer[0], &srcImageDataLength, sizeof(uint32_t));
-    memcpy(&xorBuffer[4], &width, sizeof(uint32_t));
-    memcpy(&xorBuffer[8], &height, sizeof(uint32_t));
-
     memset(lengthStructBuffer, 0, sizeof(clk_length_struct));
 
     for (i = 0;i < numLengthBytes;i++) {
@@ -186,12 +198,29 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
     }
 
     /*
-    ** XOR the length struct with the image data length, width & height...
+    ** Copy the image data len + width + height (12 bytes total)
+    ** to xorBuffer...
+    */
+    memcpy(&xorBuffer[0], &srcImageDataLength, sizeof(uint32_t));
+    memcpy(&xorBuffer[4], &width, sizeof(uint32_t));
+    memcpy(&xorBuffer[8], &height, sizeof(uint32_t));
+
+    /*
+    ** Get the 128-bit (16 byte) hash of the xor buffer...
+    */
+    PasswordManager mgr(PasswordManager::Low);
+    mgr.getKey(key, xorBuffer, sizeof(xorBuffer));
+
+    /*
+    ** XOR the length struct with the first 12 bytes of the key...
     */
     for (i = 0;i < (sizeof(uint32_t) * 3);i++) {
-        lengthStructBuffer[i] = lengthStructBuffer[i] ^ xorBuffer[i];
+        lengthStructBuffer[i] = lengthStructBuffer[i] ^ key[i];
     }
 
+    /*
+    ** Get the length struct out of the buffer...
+    */
     memcpy(lengthStruct, lengthStructBuffer, sizeof(clk_length_struct));
 
     targetDataLength = lengthStruct->compressedLength;

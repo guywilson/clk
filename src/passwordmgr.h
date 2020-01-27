@@ -6,13 +6,29 @@
 class PasswordManager
 {
     public:
-        PasswordManager() {}
+        enum Keylength {
+            VeryHigh = 512,
+            High = 384,
+            Medium = 256,
+            Low = 128
+        };
 
-        static uint32_t getKeyLength() {
+    private:
+        Keylength       keyLength;
+
+    public:
+        PasswordManager() : PasswordManager(Medium) {}
+        
+        PasswordManager(Keylength keylen) {
+            this->keyLength = keylen;
+        }
+
+        static const uint32_t getKeyByteLength() {
             return (256 / 8);
         }
 
-        void            getKey(uint8_t * key, char * szPassword);
+        void            getKey(uint8_t * key, char * szPassPhrase);
+        void            getKey(uint8_t * key, void * input, uint32_t inputLength);
 };
 
 #endif

@@ -145,7 +145,7 @@ int getUserKey(uint8_t * key)
 
 	getpwd(szPassword, 256);
 
-    PasswordManager mgr;
+    PasswordManager mgr(PasswordManager::Medium);
 
     mgr.getKey(key, szPassword);
 
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
         CloakHelper cloakHelper;
         clk_length_struct ls;
 
-        keyLength = PasswordManager::getKeyLength();
+        keyLength = PasswordManager::getKeyByteLength();
 
         key = (uint8_t *)malloc(keyLength);
 
