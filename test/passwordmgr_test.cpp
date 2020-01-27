@@ -17,7 +17,7 @@ bool test_getKey()
     
     strcpy(szPassword, "Thisisacrappassword");
 
-    keyLength = mgr.getKeyLength();
+    keyLength = mgr.getKeyByteLength();
 
     key = (uint8_t *)malloc(keyLength);
 
