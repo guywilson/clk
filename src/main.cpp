@@ -8,7 +8,10 @@
 #include <termios.h>
 #endif
 
+extern "C" {
 #include "version.h"
+}
+
 #include "clk_error.h"
 #include "memutil.h"
 #include "passwordmgr.h"
@@ -27,10 +30,12 @@ using namespace std;
 void printUsage()
 {
     cout << "Usage:" << endl;
-    cout << "    clk --help (show this help)" << endl << endl;
-    cout << "    clk --test (self test)" << endl << endl;
+    cout << "    clk --help (show this help)" << endl;
+    cout << "    clk --test (self test)" << endl;
+    cout << "    clk --version (show version info)" << endl;
     cout << "    clk [options] source-image" << endl << endl;
     cout << "    options: -o [output file]" << endl;
+    cout << "             -of [output image format] BMP or PNG" << endl;
     cout << "             -f [file to cloak]" << endl;
     cout << "             -q [merge quality] either 1, 2, or 4 bits per byte" << endl << endl;
 	cout.flush();
@@ -161,51 +166,77 @@ int main(int argc, char **argv)
     string                      outputImageName;
     string                      inputFileName;
     string                      outputFileName;
+    string                      outputImageFormat;
+    ImageFormat                 outputImageFmt;
 
-    for (i = 1;i < argc;i++) {
-        arg = argv[i];
+    if (argc > 1) {
+        for (i = 1;i < argc;i++) {
+            arg = argv[i];
 
-        if (arg[0] == '-') {
-            if (strncmp(arg, "--help", 6) == 0) {
-                printUsage();
-                return 0;
-            }
-            else if (strncmp(arg, "--test", 6) == 0) {
-                runTests();
-                return 0;
-            }
-            else if (strncmp(arg, "-f", 2) == 0) {
-                inputFileName.assign(argv[i + 1]);
-            }
-            else if (strncmp(arg, "-o", 2) == 0) {
-                outputFileName.assign(argv[i + 1]);
-            }
-            else if (strncmp(arg, "-q", 2) == 0) {
-                int q = atoi(argv[i + 1]);
+            if (arg[0] == '-') {
+                if (strncmp(arg, "--help", 6) == 0) {
+                    printUsage();
+                    return 0;
+                }
+                else if (strncmp(arg, "--test", 6) == 0) {
+                    runTests();
+                    return 0;
+                }
+                else if (strncmp(arg, "--version", 10) == 0) {
+                    cout << "clk v" << getVersion() << " [" << getBuildDate() << "]" << endl << endl;
+                    return 0;
+                }
+                else if (strncmp(arg, "-f", 2) == 0) {
+                    inputFileName.assign(argv[i + 1]);
+                }
+                else if (strncmp(arg, "-of", 3) == 0) {
+                    outputImageFormat.assign(argv[i + 1]);
 
-                switch (q) {
-                    case 1:
-                        quality = CloakHelper::MergeQuality::High;
-                        break;
-
-                    case 2:
-                        quality = CloakHelper::MergeQuality::Medium;
-                        break;
-
-                    case 4:
-                        quality = CloakHelper::MergeQuality::Low;
-                        break;
-
-                    default:
-                        cout << "Invaliid quality supplied, valid quality values are 1, 2, or 4 bits..." << endl << endl;
+                    if (outputImageFormat.compare("PNG") == 0) {
+                        outputImageFmt = PNGImage;
+                    }
+                    else if (outputImageFormat.compare("BMP") == 0) {
+                        outputImageFmt = BitmapImage;
+                    }
+                    else {
+                        cout << "Invalid image format supplied, only BMP and PNG are supported..." << endl << endl;
                         return -1;
+                    }
+                }
+                else if (strncmp(arg, "-o", 2) == 0) {
+                    outputFileName.assign(argv[i + 1]);
+                }
+                else if (strncmp(arg, "-q", 2) == 0) {
+                    int q = atoi(argv[i + 1]);
+
+                    switch (q) {
+                        case 1:
+                            quality = CloakHelper::MergeQuality::High;
+                            break;
+
+                        case 2:
+                            quality = CloakHelper::MergeQuality::Medium;
+                            break;
+
+                        case 4:
+                            quality = CloakHelper::MergeQuality::Low;
+                            break;
+
+                        default:
+                            cout << "Invaliid quality supplied, valid quality values are 1, 2, or 4 bits..." << endl << endl;
+                            return -1;
+                    }
+                }
+                else {
+                    cout << "Invalid option (" << arg << ") - clk --help for help" << endl << endl;
+                    return -1;
                 }
             }
-            else {
-                cout << "Invalid option (" << arg << ") - clk --help for help" << endl << endl;
-                return -1;
-            }
         }
+    }
+    else {
+        printUsage();
+        return -1;
     }
 
     if (inputFileName.length() > 0) {
@@ -281,8 +312,20 @@ int main(int argc, char **argv)
 
             ImageOutputStream os(outputImageName);
 
+            RGB24BitImage * outImg;
+
+            if (outputImageFmt == PNGImage && outputImage->getFormat() == BitmapImage) {
+                outImg = new PNG((Bitmap *)outputImage);
+            }
+            else if (outputImageFmt == BitmapImage && outputImage->getFormat() == PNGImage) {
+                outImg = new Bitmap((PNG *)outputImage);
+            }
+            else {
+                outImg = outputImage;
+            }
+
             os.open();
-            os.write(outputImage);
+            os.write(outImg);
             os.close();
 
             delete inputFile;
