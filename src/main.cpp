@@ -43,7 +43,7 @@ void printUsage()
 void runTests()
 {
     int     passCount = 0;
-    int     runCount = 11;
+    int     runCount = 10;
 
     cout << "Running test suite..." << endl << endl;
 
