@@ -28,12 +28,13 @@ Clk is written in C++ and I have provided a makefile for Unix/Linux using the gc
 Build clk using the system make utility, e.g. on Linux/macOs
 
     make
-    
+
+
 Using Clk
 -----------
 Type Cloak --help to get help on the command line parameters.
 
-I have included a sample PNG file with this distribution - flowers.png which has the LICENSE encoded within it, the password used to encrypt the file is 'password', you must use a strong password, see the tips above.
+I have included a sample PNG file with this distribution - flowers_out.png which has the LICENSE encoded within it, the password used to encrypt the file is 'password', you should use a strong password, see the tips above.
 
 For example, to 'cloak' a file within flowers.png I used the following command:
 
