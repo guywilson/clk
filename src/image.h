@@ -157,12 +157,25 @@ class Bitmap : public RGB24BitImage
         BitmapType      type;
 
     public:
-        Bitmap(Bitmap & src) : RGB24BitImage(src) {}
-        Bitmap(Bitmap * src) : RGB24BitImage(src) {}
-        Bitmap(PNG & src) : RGB24BitImage(src) {}
-        Bitmap(PNG * src) : RGB24BitImage(src) {}
-        Bitmap(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height) : RGB24BitImage(data, dataLength, width, height) {}
+        Bitmap(Bitmap & src) : RGB24BitImage(src) {
+            setType(src.getType());
+        }
+        Bitmap(Bitmap * src) : RGB24BitImage(src) {
+            setType(src->getType());
+        }
+        Bitmap(PNG & src) : RGB24BitImage(src) {
+            setType(WindowsV3);
+        }
+        Bitmap(PNG * src) : RGB24BitImage(src) {
+            setType(WindowsV3);
+        }
+        Bitmap(uint8_t * data, uint32_t dataLength, uint32_t width, uint32_t height) : RGB24BitImage(data, dataLength, width, height) {
+            setType(WindowsV3);
+        }
 
+        BitmapType getType() {
+            return this->type;
+        }
         void setType(BitmapType t) {
             this->type = t;
         }
