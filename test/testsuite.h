@@ -2,8 +2,8 @@
 #define _INCL_TESTSUITE
 
 bool test_getKey();
-bool test_encrypt();
-bool test_compress();
+bool test_encrypt_AES();
+bool test_seededXOR();
 bool test_PNG();
 bool test_Bitmap();
 bool test_PNGtoBitmap();

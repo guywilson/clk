@@ -29,6 +29,9 @@ class FileStream
         FileStream(string & filename) {
             this->filename = filename;
         }
+        FileStream(const char * szFileName) {
+            this->filename = szFileName;
+        }
 
         virtual void    open() = 0;
 
@@ -41,6 +44,7 @@ class FileInputStream : public FileStream
 {
     public:
         FileInputStream(string & filename) : FileStream(filename) {}
+        FileInputStream(const char * filename) : FileStream(filename) {}
 
         virtual void    open();
 
@@ -51,6 +55,7 @@ class FileOutputStream : public FileStream
 {
     public:
         FileOutputStream(string & filename) : FileStream(filename) {}
+        FileOutputStream(const char * filename) : FileStream(filename) {}
 
         virtual void    open();
 

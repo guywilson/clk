@@ -12,6 +12,8 @@ class EncryptionHelper
     private:
         uint8_t *               generateIV(uint8_t * key, uint32_t keyLength);
 
+        uint8_t *               encryptXOR(uint8_t * srcData, uint32_t srcDataLength, uint8_t * key, uint32_t keyLength);
+
         DataFile *              encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength);
         DataFile *              decryptAES256(DataFile * src, uint32_t decryptedDataLength, uint8_t * key, uint32_t keyLength);
 
@@ -25,6 +27,8 @@ class EncryptionHelper
             AES_256,
             XOR
         };
+
+        DataFile * seededXOR(DataFile * src, uint32_t seed);
 
         DataFile * encrypt(DataFile * src, Algorithm alg, uint8_t * key, uint32_t keyLength) {
             switch (alg) {

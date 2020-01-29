@@ -42,6 +42,27 @@ uint8_t * EncryptionHelper::generateIV(uint8_t * key, uint32_t keyLength)
     return iv;
 }
 
+uint8_t * EncryptionHelper::encryptXOR(uint8_t * srcData, uint32_t srcDataLength, uint8_t * key, uint32_t keyLength)
+{
+    uint8_t *               outputData;
+
+    if (keyLength < srcDataLength) {
+        throw clk_error("Key length must be longer than plain text", __FILE__, __LINE__);
+    }
+
+    outputData = (uint8_t *)malloc(srcDataLength);
+
+    if (outputData == NULL) {
+        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
+    }
+
+    for (int i = 0;i < srcDataLength;i++) {
+        outputData[i] = srcData[i] ^ key[i];
+    }
+
+    return outputData;
+}
+
 DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
     DataFile *              outputDataFile;
@@ -207,21 +228,9 @@ DataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * key, uint32_t 
 
     src->getData(&inputData, &inputDataLength);
 
-    if (keyLength < inputDataLength) {
-        throw clk_error("Key length must be longer than plain text", __FILE__, __LINE__);
-    }
+    outputData = encryptXOR(inputData, inputDataLength, key, keyLength);
 
-	outputDataLength = inputDataLength;
-
-    outputData = (uint8_t *)malloc(outputDataLength);
-
-    if (outputData == NULL) {
-        throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
-    }
-
-    for (int i = 0;i < inputDataLength;i++) {
-        outputData[i] = inputData[i] ^ key[i];
-    }
+    outputDataLength = inputDataLength;
 
     outputDataFile = new DataFile(outputData, outputDataLength);
 
@@ -231,4 +240,45 @@ DataFile * EncryptionHelper::encryptXOR(DataFile * src, uint8_t * key, uint32_t 
 DataFile * EncryptionHelper::decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength)
 {
     return encryptXOR(src, key, keyLength);
+}
+
+DataFile * EncryptionHelper::seededXOR(DataFile * src, uint32_t seed)
+{
+    DataFile *      outputDataFile;
+    uint8_t *       srcData;
+    uint32_t        srcDataLength;
+    uint8_t *       outputData;
+    uint8_t *       data = NULL;
+    uint8_t         key[64];
+    uint32_t        xorLength;
+    int             i;
+
+    srcData = src->getData();
+    srcDataLength = src->getDataLength();
+
+    outputData = (uint8_t *)malloc(srcDataLength);
+
+    if (outputData == NULL) {
+        throw clk_error("Failed to allocate memory for output buffer", __FILE__, __LINE__);
+    }
+
+    xorLength = 64;
+
+    for (i = 0;i < srcDataLength;i += xorLength) {
+        gcry_md_hash_buffer(GCRY_MD_SHA3_512, key, &seed, sizeof(uint32_t));
+
+        if (i > (srcDataLength - xorLength)) {
+            xorLength = srcDataLength - i;
+        }
+
+        data = encryptXOR(&srcData[i], xorLength, key, 64);
+        memcpy(&outputData[i], data, xorLength);
+        free(data);
+
+        seed++;
+    }
+
+    outputDataFile = new DataFile(outputData, srcDataLength);
+
+    return outputDataFile;
 }

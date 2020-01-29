@@ -10,7 +10,6 @@ typedef struct __attribute__((__packed__))
 {
     uint32_t        originalLength;
     uint32_t        encryptedLength;
-    uint32_t        compressedLength;
 }
 clk_length_struct;
 

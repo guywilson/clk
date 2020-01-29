@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool test_encrypt()
+bool test_encrypt_AES()
 {
     char            key[33] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ012345";
     uint32_t        len = 32;
@@ -23,7 +23,7 @@ bool test_encrypt()
     DataFile * encryptedDf;
     DataFile * decryptedDf;
 
-    cout << "In test_encrypt()" << endl;
+    cout << "In test_encrypt_AES()" << endl;
 
     fname.assign("README.md");
 
@@ -44,6 +44,58 @@ bool test_encrypt()
 
         src->getData(&srcData, &srcDataLength);
         
+        decryptedDf->getData(&decryptedData, &decryptedDataLength);
+
+        // for (int i = 0;i < srcDataLength;i++) {
+        //     printf("src '%c' [0x%02X]\tdec '%c' [0x%02X]\n", (char)srcData[i], srcData[i], (char)decryptedData[i], decryptedData[i]);
+        // }
+
+        if (memcmp(srcData, decryptedData, srcDataLength) == 0) {
+            cout << "DataFiles are equal..." << endl;
+            return true;
+        }
+        else {
+            cout << "Datafiles are not equal!" << endl;
+            return false;
+        }
+    }
+    catch (clk_error & ce) {
+        cout << "Caught clk_error: " << ce.what() << endl;
+        exit(-1);
+    }
+}
+
+bool test_seededXOR()
+{
+    uint32_t        seed;
+    uint8_t *       srcData;
+    uint32_t        srcDataLength;
+    uint8_t *       decryptedData;
+    uint32_t        decryptedDataLength;
+
+    DataFile * encryptedDf;
+    DataFile * decryptedDf;
+
+    cout << "In test_seededXOR()" << endl;
+
+    string inputFileName = "LICENSE";
+
+    try {
+        FileInputStream is(inputFileName);
+
+        is.open();
+        DataFile * src = is.read();
+        is.close();
+
+        src->getData(&srcData, &srcDataLength);
+        
+        seed = srcDataLength;
+
+        EncryptionHelper * eh = new EncryptionHelper();
+
+        encryptedDf = eh->seededXOR(src, seed);
+        decryptedDf = eh->seededXOR(encryptedDf, seed);
+
         decryptedDf->getData(&decryptedData, &decryptedDataLength);
 
         // for (int i = 0;i < srcDataLength;i++) {

@@ -20,7 +20,6 @@ extern "C" {
 #include "ImageStream.h"
 #include "image.h"
 #include "encrypt.h"
-#include "compress.h"
 #include "cloak.h"
 
 #include "../test/testsuite.h"
@@ -44,17 +43,17 @@ void printUsage()
 void runTests()
 {
     int     passCount = 0;
-    int     runCount = 10;
+    int     runCount = 11;
 
     cout << "Running test suite..." << endl << endl;
 
     if (test_getKey()) {
         passCount++;
     }
-    if (test_encrypt()) {
+    if (test_encrypt_AES()) {
         passCount++;
     }
-    if (test_compress()) {
+    if (test_seededXOR()) {
         passCount++;
     }
     if (test_PNG()) {
@@ -164,7 +163,6 @@ void hide(
         uint32_t keyLength)
 {
     EncryptionHelper    encryptionHelper;
-    CompressionHelper   compressionHelper;
     CloakHelper         cloakHelper;
     clk_length_struct   ls;
 
@@ -185,32 +183,34 @@ void hide(
         fis.close();
 
         /*
-        ** Step 1: Encrypt the input (secret) file...
+        ** Step 1: Encrypt the input file using AES-256...
         */
-        DataFile * encryptedInputFile = 
+        DataFile * encrypted = 
             encryptionHelper.encrypt(inputFile, EncryptionHelper::AES_256, key, keyLength);
 
         /*
-        ** Step 2: Compress the encrypted file...
+        ** Step 2: Encrypt the file from step 1 using the seeded XOR 
+        ** algorithm. Use the image data length as the seed...
         */
-        DataFile * compressedInputFile = 
-            compressionHelper.compress(encryptedInputFile, 6);
+        DataFile * xored =
+            encryptionHelper.seededXOR(encrypted, inputImage->getDataLength());
 
         /*
         ** Setup the length structure...
         */
         ls.originalLength = inputFile->getDataLength();
-        ls.encryptedLength = encryptedInputFile->getDataLength();
-        ls.compressedLength = compressedInputFile->getDataLength();
+        ls.encryptedLength = encrypted->getDataLength();
 
-        cout << "Merge: Original file len: " << ls.originalLength << ", encrypted len: " << ls.encryptedLength << ", compressed len: " << ls.compressedLength << endl;
+        cout << "Merge:" << endl;
+        cout << "    Original file len: " << ls.originalLength << endl;
+        cout << "    Encrypted len:     " << ls.encryptedLength << endl << endl;
 
         /*
-        ** Step 3: Merge the encrypted & compressed data with the 
+        ** Step 3: Merge the encrypted data with the 
         ** source image...
         */
         RGB24BitImage * mergedImage = 
-            cloakHelper.merge(inputImage, compressedInputFile, &ls, quality);
+            cloakHelper.merge(inputImage, xored, &ls, quality);
 
         ImageOutputStream os(outputImageName);
 
@@ -239,8 +239,8 @@ void hide(
         }
 
         delete inputFile;
-        delete encryptedInputFile;
-        delete compressedInputFile;
+        delete encrypted;
+        delete xored;
         delete mergedImage;
         delete inputImage;
     }
@@ -258,7 +258,6 @@ void reveal(
         uint32_t keyLength)
 {
     EncryptionHelper    encryptionHelper;
-    CompressionHelper   compressionHelper;
     CloakHelper         cloakHelper;
     clk_length_struct   ls;
 
@@ -275,22 +274,25 @@ void reveal(
         /*
         ** Step 1: Extract the data file from the source image...
         */
-        DataFile * encodedOutputFile = 
+        DataFile * extracted = 
             cloakHelper.extract(inputImage, &ls, quality);
 
-        cout << "Extract: Original file len: " << ls.originalLength << ", encrypted len: " << ls.encryptedLength << ", compressed len: " << ls.compressedLength << endl;
+        cout << "Extract:" << endl;
+        cout << "    Original file len: " << ls.originalLength << endl;
+        cout << "    Encrypted len:     " << ls.encryptedLength << endl << endl;
 
         /*
-        ** Step 2: Inflate the input data file...
+        ** Step 2: Decrypt the file from step 1 using the seeded XOR 
+        ** algorithm. Use the image data length as the seed...
         */
-        DataFile * encryptedOutputFile = 
-            compressionHelper.inflate(encodedOutputFile, ls.encryptedLength);
+        DataFile * xored =
+            encryptionHelper.seededXOR(extracted, inputImage->getDataLength());
 
         /*
-        ** Step 3: Decrypt the input data file
+        ** Step 3: Decrypt the file from step 2 using AES-256...
         */
         DataFile * outputFile = 
-            encryptionHelper.decrypt(encryptedOutputFile, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
+            encryptionHelper.decrypt(xored, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
 
         FileOutputStream fos(outputFileName);
 
@@ -298,8 +300,8 @@ void reveal(
         fos.write(outputFile);
         fos.close();
 
-        delete encodedOutputFile;
-        delete encryptedOutputFile;
+        delete extracted;
+        delete xored;
         delete outputFile;
         delete inputImage;
     }

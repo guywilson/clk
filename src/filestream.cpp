@@ -75,6 +75,6 @@ void FileOutputStream::write(DataFile * df)
     bytesWritten = fwrite(fileData, 1, fileLength, this->getFilePtr());
 
     if (bytesWritten < fileLength) {
-        throw clk_error("Failed to write enough data", __FILE__, __LINE__);
+        throw clk_error(clk_error::buildMsg("Failed to write enough data, expected %u, actual %u", fileLength, bytesWritten), __FILE__, __LINE__);
     }
 }

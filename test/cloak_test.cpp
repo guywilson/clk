@@ -41,7 +41,6 @@ bool test_merge()
         clk_length_struct ls;
 
         ls.originalLength = secretFile->getDataLength();
-        ls.compressedLength = secretFile->getDataLength();
         ls.encryptedLength = secretFile->getDataLength();
 
         CloakHelper ch;

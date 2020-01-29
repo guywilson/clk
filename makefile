@@ -36,7 +36,7 @@ DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP)/$*.Td
 
 # Libraries
 STDLIBS = -lstdc++
-EXTLIBS = -lgcrypt -lz -lpng
+EXTLIBS = -lgcrypt -lpng
 
 COMPILE.cpp = $(CPP) $(CPPFLAGS) $(DEPFLAGS) $(MGFLAGS) -o $@
 COMPILE.c = $(C) $(CFLAGS) $(DEPFLAGS) $(MGFLAGS) -o $@
