@@ -29,6 +29,7 @@ Build clk using the system make utility, e.g. on Linux/macOs
 
     make
 
+![flowers_out.png](flowers_out.png)
 
 Using Clk
 -----------
