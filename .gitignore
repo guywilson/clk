@@ -1,11 +1,5 @@
 /dep
 /build
 clk
-*.bmp
-*.png
-LICENSE.test_merge.copy
-LICENSE.test_read_write.copy
 LICENSE.out
-LICENSE.xor
 .DS_Store
-README.md.copy
