@@ -7,37 +7,23 @@ extern "C" {
 }
 
 #include "clk_error.h"
+#include "memutil.h"
 #include "encrypt.h"
 #include "datafile.h"
 
 using namespace std;
 
-uint8_t * EncryptionHelper::generateIV(uint8_t * key, uint32_t keyLength)
+uint8_t * EncryptionHelper::generateIV()
 {
-	int					err;
     uint8_t *           iv;
-	gcry_md_hd_t		blake_hd;
 
-    /*
-	** Get the Blake-128 hash of the key as the iv...
-	*/
-	err = gcry_md_open(&blake_hd, 0, 0);
+    iv = (uint8_t *)malloc(BLOCK_SIZE);
 
-	if (err) {
-        throw clk_error("Failed to open hash handle", __FILE__, __LINE__);
-	}
+    if (iv == NULL) {
+        throw clk_error("Failed to allocate memory for IV", __FILE__, __LINE__);
+    }
 
-	err = gcry_md_enable(blake_hd, GCRY_MD_BLAKE2S_128);
-
-	if (err) {
-        throw clk_error("Failed to enable hash function", __FILE__, __LINE__);
-	}
-
-	gcry_md_write(blake_hd, key, keyLength);
-
-	iv = gcry_md_read(blake_hd, GCRY_MD_BLAKE2S_128);
-
-	gcry_md_close(blake_hd);
+    gcry_randomize(iv, BLOCK_SIZE, GCRY_STRONG_RANDOM);
 
     return iv;
 }
@@ -69,9 +55,9 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
     gcry_cipher_hd_t	    aes_hd;
     uint8_t *               inputData;
     uint8_t *               outputData;
+    uint8_t *               iv;
     uint32_t                inputDataLength;
     uint32_t                outputDataLength;
-    uint32_t                ivLength;
     uint32_t                blockLength;
     int                     err;
 
@@ -94,12 +80,12 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
         throw clk_error("Failed to set key", __FILE__, __LINE__);
     }
 
-    ivLength = gcry_md_get_algo_dlen(GCRY_MD_BLAKE2S_128);
+    iv = generateIV();
 
     err = gcry_cipher_setiv(
     					aes_hd,
-    					(const void *)generateIV(key, keyLength),
-    					ivLength);
+    					iv,
+    					BLOCK_SIZE);
 
     if (err) {
         throw clk_error("Failed to set iv", __FILE__, __LINE__);
@@ -124,17 +110,23 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
 		outputDataLength = inputDataLength + (blockLength - (inputDataLength % blockLength));
 	}
 
-    outputData = (uint8_t *)malloc(outputDataLength);
+    outputData = (uint8_t *)malloc(outputDataLength + BLOCK_SIZE);
 
     if (outputData == NULL) {
         throw clk_error(clk_error::buildMsg("Failed to allocate %ld bytes", outputDataLength), __FILE__, __LINE__);
     }
 
-    memcpy(outputData, inputData, inputDataLength);
+    /*
+    ** Prepend the output data wih the iv...
+    */
+    memcpy(outputData, iv, BLOCK_SIZE);
+    memcpy(&outputData[BLOCK_SIZE], inputData, inputDataLength);
+
+    memclr(iv, BLOCK_SIZE);
 
 	err = gcry_cipher_encrypt(
 							aes_hd,
-							outputData,
+							&outputData[BLOCK_SIZE],
 							outputDataLength,
 							NULL,//inputData,
 							0);//inputDataLength);
@@ -145,7 +137,7 @@ DataFile * EncryptionHelper::encryptAES256(DataFile * src, uint8_t * key, uint32
 
     gcry_cipher_close(aes_hd);
 
-    outputDataFile = new DataFile(outputData, outputDataLength);
+    outputDataFile = new DataFile(outputData, outputDataLength + BLOCK_SIZE);
 
     return outputDataFile;
 }
@@ -156,9 +148,9 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint32_t decryptedDat
     gcry_cipher_hd_t	    aes_hd;
     uint8_t *               inputData;
     uint8_t *               outputData;
+    uint8_t *               iv;
     uint32_t                inputDataLength;
     uint32_t                outputDataLength;
-    uint32_t                ivLength;
     int                     err;
 
     err = gcry_cipher_open(
@@ -179,20 +171,29 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint32_t decryptedDat
     if (err) {
         throw clk_error("Failed to set key", __FILE__, __LINE__);
     }
+    
+    src->getData(&inputData, &inputDataLength);
+    
+    iv = (uint8_t *)malloc(BLOCK_SIZE);
 
-    ivLength = gcry_md_get_algo_dlen(GCRY_MD_BLAKE2S_128);
+    if (iv == NULL) {
+        throw clk_error("Failed to allocate memory for IV", __FILE__, __LINE__);
+    }
+
+    /*
+    ** IV is prepended to the input data...
+    */
+    memcpy(iv, inputData, BLOCK_SIZE);
 
     err = gcry_cipher_setiv(
     					aes_hd,
-    					(const void *)generateIV(key, keyLength),
-    					ivLength);
+    					iv,
+    					BLOCK_SIZE);
     if (err) {
         throw clk_error("Failed to set iv", __FILE__, __LINE__);
     }
 
-    src->getData(&inputData, &inputDataLength);
-    
-	outputDataLength = inputDataLength;
+	outputDataLength = inputDataLength - BLOCK_SIZE;
 
     outputData = (uint8_t *)malloc(outputDataLength);
 
@@ -204,8 +205,8 @@ DataFile * EncryptionHelper::decryptAES256(DataFile * src, uint32_t decryptedDat
 							aes_hd,
 							outputData,
 							outputDataLength,
-							inputData,
-							inputDataLength);
+							&inputData[BLOCK_SIZE],
+							inputDataLength - BLOCK_SIZE);
 
 	if (err) {
         throw clk_error(clk_error::buildMsg("Failed to decrypt data - %s [%d]", gcry_strerror(err), err), __FILE__, __LINE__);

@@ -10,7 +10,7 @@
 class EncryptionHelper
 {
     private:
-        uint8_t *               generateIV(uint8_t * key, uint32_t keyLength);
+        uint8_t *               generateIV();
 
         uint8_t *               encryptXOR(uint8_t * srcData, uint32_t srcDataLength, uint8_t * key, uint32_t keyLength);
 

@@ -438,6 +438,8 @@ int main(int argc, char **argv)
                 keyLength);
         }
 
+        memclr(key, keyLength);
+        
         free(key);
 
         cout << "Operation completed successfully..." << endl << endl;
