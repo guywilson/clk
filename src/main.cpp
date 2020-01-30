@@ -189,13 +189,6 @@ void hide(
             encryptionHelper.encrypt(inputFile, EncryptionHelper::AES_256, key, keyLength);
 
         /*
-        ** Step 2: Encrypt the file from step 1 using the seeded XOR 
-        ** algorithm. Use the image data length as the seed...
-        */
-        DataFile * xored =
-            encryptionHelper.seededXOR(encrypted, inputImage->getDataLength());
-
-        /*
         ** Setup the length structure...
         */
         ls.originalLength = inputFile->getDataLength();
@@ -206,11 +199,11 @@ void hide(
         cout << "    Encrypted len:     " << ls.encryptedLength << endl << endl;
 
         /*
-        ** Step 3: Merge the encrypted data with the 
+        ** Step 2: Merge the encrypted data with the 
         ** source image...
         */
         RGB24BitImage * mergedImage = 
-            cloakHelper.merge(inputImage, xored, &ls, quality);
+            cloakHelper.merge(inputImage, encrypted, &ls, quality);
 
         ImageOutputStream os(outputImageName);
 
@@ -240,7 +233,6 @@ void hide(
 
         delete inputFile;
         delete encrypted;
-        delete xored;
         delete mergedImage;
         delete inputImage;
     }
@@ -282,17 +274,10 @@ void reveal(
         cout << "    Encrypted len:     " << ls.encryptedLength << endl << endl;
 
         /*
-        ** Step 2: Decrypt the file from step 1 using the seeded XOR 
-        ** algorithm. Use the image data length as the seed...
-        */
-        DataFile * xored =
-            encryptionHelper.seededXOR(extracted, inputImage->getDataLength());
-
-        /*
-        ** Step 3: Decrypt the file from step 2 using AES-256...
+        ** Step 2: Decrypt the file from step 2 using AES-256...
         */
         DataFile * outputFile = 
-            encryptionHelper.decrypt(xored, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
+            encryptionHelper.decrypt(extracted, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
 
         FileOutputStream fos(outputFileName);
 
@@ -301,7 +286,6 @@ void reveal(
         fos.close();
 
         delete extracted;
-        delete xored;
         delete outputFile;
         delete inputImage;
     }
@@ -439,7 +423,7 @@ int main(int argc, char **argv)
         }
 
         memclr(key, keyLength);
-        
+
         free(key);
 
         cout << "Operation completed successfully..." << endl << endl;
