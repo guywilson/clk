@@ -3,3 +3,12 @@
 clk
 LICENSE.out
 .DS_Store
+.DS_Store
+flowers_copy.bmp
+flowers_copy.png
+flowers_translated.bmp
+flowers_translated.png
+flowers.bmp
+flowers.png
+LICENSE.test_merge.copy
+LICENSE.test_read_write.copy

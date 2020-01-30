@@ -30,8 +30,8 @@ PRECOMPILE = @ mkdir -p $(BUILD) $(DEP)
 # postcompile step
 POSTCOMPILE = @ mv -f $(DEP)/$*.Td $(DEP)/$*.d
 
-CPPFLAGS = -c -Wall -pedantic -std=c++11
-CFLAGS = -c -Wall -pedantic
+CPPFLAGS = -c -O2 -Wall -pedantic -std=c++11
+CFLAGS = -c -O2 -Wall -pedantic
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP)/$*.Td
 
 # Libraries
