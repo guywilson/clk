@@ -428,6 +428,9 @@ int main(int argc, char **argv)
             alg = EncryptionHelper::Algorithm::XOR;
         }
         else {
+            /*
+            ** Encrypt using the AES-256 algorithm in CBC mode...
+            */
             keyLength = PasswordManager::getKeyByteLength();
 
             key = (uint8_t *)malloc(keyLength);
@@ -465,6 +468,9 @@ int main(int argc, char **argv)
                 keyLength);
         }
 
+        /*
+        ** Wipe the key from memory...
+        */
         memclr(key, keyLength);
 
         free(key);
