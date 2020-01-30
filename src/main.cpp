@@ -36,6 +36,7 @@ void printUsage()
     cout << "    options: -o [output file]" << endl;
     cout << "             -of [output image format] BMP or PNG" << endl;
     cout << "             -f [file to cloak]" << endl;
+    cout << "             -k [keystream file for one-time pad encryption]" << endl;
     cout << "             -q [merge quality] either 1, 2, or 4 bits per byte" << endl << endl;
 	cout.flush();
 }
@@ -159,6 +160,7 @@ void hide(
         string & outputImageName, 
         CloakHelper::MergeQuality quality, 
         ImageFormat outputImageFormat, 
+        EncryptionHelper::Algorithm algo,
         uint8_t * key,
         uint32_t keyLength)
 {
@@ -183,10 +185,10 @@ void hide(
         fis.close();
 
         /*
-        ** Step 1: Encrypt the input file using AES-256...
+        ** Step 1: Encrypt the input file using the supplied algorithm...
         */
-        DataFile * encrypted = 
-            encryptionHelper.encrypt(inputFile, EncryptionHelper::AES_256, key, keyLength);
+        DataFile * encrypted =
+            encryptionHelper.encrypt(inputFile, algo, key, keyLength);
 
         /*
         ** Setup the length structure...
@@ -246,6 +248,7 @@ void reveal(
         string & inputImageName, 
         string & outputFileName, 
         CloakHelper::MergeQuality quality, 
+        EncryptionHelper::Algorithm algo,
         uint8_t * key,
         uint32_t keyLength)
 {
@@ -274,10 +277,10 @@ void reveal(
         cout << "    Encrypted len:     " << ls.encryptedLength << endl << endl;
 
         /*
-        ** Step 2: Decrypt the file from step 2 using AES-256...
+        ** Step 2: Decrypt the file from step 2 using the supplied algorithm...
         */
         DataFile * outputFile = 
-            encryptionHelper.decrypt(extracted, EncryptionHelper::AES_256, ls.originalLength, key, keyLength);
+            encryptionHelper.decrypt(extracted, algo, ls.originalLength, key, keyLength);
 
         FileOutputStream fos(outputFileName);
 
@@ -307,6 +310,7 @@ int main(int argc, char **argv)
     string                      outputImageName;
     string                      inputFileName;
     string                      outputFileName;
+    string                      keystreamFileName;
     string                      outputImageFormat;
     ImageFormat                 outputImageFmt;
 
@@ -343,6 +347,9 @@ int main(int argc, char **argv)
                         cout << "Invalid image format supplied, only BMP and PNG are supported..." << endl << endl;
                         return -1;
                     }
+                }
+                else if (strncmp(arg, "-k", 2) == 0) {
+                    keystreamFileName.assign(argv[i + 1]);
                 }
                 else if (strncmp(arg, "-o", 2) == 0) {
                     outputFileName.assign(argv[i + 1]);
@@ -390,18 +397,52 @@ int main(int argc, char **argv)
     inputImageName = strdup(argv[argc - 1]);
 
     try {
-        keyLength = PasswordManager::getKeyByteLength();
+        EncryptionHelper::Algorithm     alg;
 
-        key = (uint8_t *)malloc(keyLength);
+        if (keystreamFileName.length() > 0) {
+            /*
+            ** Encrypt using the supplied keystream file using
+            ** the XOR algorithm (e.g. one-time pad encryption)
+            */
+            FileInputStream ks(keystreamFileName);
 
-        if (key == NULL) {
-            throw clk_error("Failed to allocate memory for key", __FILE__, __LINE__);
+            ks.open();
+            DataFile * keystreamFile = ks.read();
+            ks.close();
+
+            keyLength = keystreamFile->getDataLength();
+
+            key = (uint8_t *)malloc(keyLength);
+
+            if (key == NULL) {
+                throw clk_error("Failed to allocate memory for key", __FILE__, __LINE__);
+            }
+
+            /*
+            ** Copy the key...
+            */
+            memcpy(key, keystreamFile->getData(), keyLength);
+
+            delete keystreamFile;
+
+            alg = EncryptionHelper::Algorithm::XOR;
         }
+        else {
+            keyLength = PasswordManager::getKeyByteLength();
 
-        /*
-        ** Get the key...
-        */
-        getUserKey(key);
+            key = (uint8_t *)malloc(keyLength);
+
+            if (key == NULL) {
+                throw clk_error("Failed to allocate memory for key", __FILE__, __LINE__);
+            }
+
+            /*
+            ** Get the key...
+            */
+            getUserKey(key);
+
+            alg = EncryptionHelper::Algorithm::AES_256;
+        }
 
         if (isMerge) {
             hide(
@@ -410,6 +451,7 @@ int main(int argc, char **argv)
                 outputImageName, 
                 quality, 
                 outputImageFmt, 
+                alg,
                 key, 
                 keyLength);
         }
@@ -418,6 +460,7 @@ int main(int argc, char **argv)
                 inputImageName, 
                 outputFileName, 
                 quality, 
+                alg,
                 key, 
                 keyLength);
         }
