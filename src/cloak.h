@@ -8,10 +8,11 @@
 
 typedef struct __attribute__((__packed__))
 {
+    uint32_t        crc;
     uint32_t        originalLength;
     uint32_t        encryptedLength;
 }
-clk_length_struct;
+clk_info_struct;
 
 class CloakHelper
 {
@@ -39,12 +40,12 @@ class CloakHelper
         RGB24BitImage * merge(
                             RGB24BitImage * srcImage, 
                             DataFile * srcDataFile, 
-                            clk_length_struct * lengthStruct, 
+                            clk_info_struct * infoStruct, 
                             MergeQuality bitsPerByte);
 
         DataFile * extract(
                             RGB24BitImage * srcImage, 
-                            clk_length_struct * clk_length_struct,
+                            clk_info_struct * infoStruct,
                             MergeQuality bitsPerByte);
 };
 

@@ -38,14 +38,14 @@ bool test_merge()
         DataFile * secretFile = fis.read();
         fis.close();
 
-        clk_length_struct ls;
+        clk_info_struct info;
 
-        ls.originalLength = secretFile->getDataLength();
-        ls.encryptedLength = secretFile->getDataLength();
+        info.originalLength = secretFile->getDataLength();
+        info.encryptedLength = secretFile->getDataLength();
 
         CloakHelper ch;
 
-        RGB24BitImage * outputImage = ch.merge(img, secretFile, &ls, ch.High);
+        RGB24BitImage * outputImage = ch.merge(img, secretFile, &info, ch.High);
 
         ImageOutputStream os(imageOutputName);
 
@@ -53,7 +53,7 @@ bool test_merge()
         os.write(outputImage);
         os.close();
 
-        DataFile * outputDataFile = ch.extract(outputImage, &ls, ch.High);
+        DataFile * outputDataFile = ch.extract(outputImage, &info, ch.High);
 
         FileOutputStream fos(outputFileName);
 

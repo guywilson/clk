@@ -4,6 +4,7 @@
 
 #include "clk_error.h"
 #include "passwordmgr.h"
+#include "crc32.h"
 #include "cloak.h"
 #include "image.h"
 #include "datafile.h"
@@ -18,7 +19,7 @@
 **      value supplied.
 **
 ******************************************************************************/
-RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataFile, clk_length_struct * lengthStruct, MergeQuality bitsPerByte)
+RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataFile, clk_info_struct * infoStruct, MergeQuality bitsPerByte)
 {
     RGB24BitImage *     targetImage;
     uint8_t *           srcImageData;
@@ -27,7 +28,7 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     uint32_t            targetImageDataLength;
     uint8_t *           secretData;
     uint32_t            secretDataLength;
-    uint8_t             lengthStructBuffer[sizeof(clk_length_struct)];
+    uint8_t             infoStructBuffer[sizeof(clk_info_struct)];
     uint8_t             xorBuffer[sizeof(uint32_t) * 3];
     uint8_t             xorKey[128 / 8];
     uint32_t            imageCapacity;
@@ -43,7 +44,7 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     secretData = srcDataFile->getData();
     secretDataLength = srcDataFile->getDataLength();
 
-    numLengthBytes = sizeof(clk_length_struct) * (8 / bitsPerByte);
+    numLengthBytes = sizeof(clk_info_struct) * (8 / bitsPerByte);
     numDataBytes = secretDataLength * (8 / bitsPerByte);
 
     width = srcImage->getWidth();
@@ -66,14 +67,14 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     /*
     ** Pop the length struct into a buffer...
     */
-    memcpy(lengthStructBuffer, lengthStruct, sizeof(clk_length_struct));
+    memcpy(infoStructBuffer,infoStruct, sizeof(clk_info_struct));
 
     /*
     ** XOR the length struct with the first n bytes of the key,
     ** n = sizeof the length struct...
     */
-    for (i = 0;i < sizeof(clk_length_struct);i++) {
-        lengthStructBuffer[i] = lengthStructBuffer[i] ^ xorKey[i];
+    for (i = 0;i < sizeof(clk_info_struct);i++) {
+        infoStructBuffer[i] = infoStructBuffer[i] ^ xorKey[i];
     }
 
     imageCapacity = (srcImageDataLength / (8 / bitsPerByte) - numLengthBytes);
@@ -104,7 +105,7 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     pos = 0;
 
     for (i = 0;i < numLengthBytes;i++) {
-        dataBits = (lengthStructBuffer[pos] >> bitCounter) & mask;
+        dataBits = (infoStructBuffer[pos] >> bitCounter) & mask;
         targetImageData[i] = (srcImageData[i] & ~mask) | dataBits;
 
         bitCounter += bitsPerByte;
@@ -150,7 +151,7 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
 **      data in.
 **
 ******************************************************************************/
-DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * lengthStruct, MergeQuality bitsPerByte)
+DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_info_struct * infoStruct, MergeQuality bitsPerByte)
 {
     DataFile *              targetDataFile;
     uint8_t *               srcImageData;
@@ -160,7 +161,7 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
     uint32_t                width;
     uint32_t                height;
     uint8_t                 mask;
-    uint8_t                 lengthStructBuffer[sizeof(clk_length_struct)];
+    uint8_t                 infoStructBuffer[sizeof(clk_info_struct)];
     uint8_t                 xorBuffer[sizeof(uint32_t) * 3];
     uint8_t                 xorKey[128 / 8];
     uint8_t                 targetBits;
@@ -177,12 +178,12 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
     targetBits = 0x00;
     targetByte = 0x00;
 
-    numLengthBytes = sizeof(clk_length_struct) * (8 / bitsPerByte);
+    numLengthBytes = sizeof(clk_info_struct) * (8 / bitsPerByte);
 
     width = srcImage->getWidth();
     height = srcImage->getHeight();
 
-    memset(lengthStructBuffer, 0, sizeof(clk_length_struct));
+    memset(infoStructBuffer, 0, sizeof(clk_info_struct));
 
     for (i = 0;i < numLengthBytes;i++) {
         targetBits = srcImageData[i] & mask;
@@ -193,7 +194,7 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
         if (bitCounter == 8) {
             bitCounter = 0;
 
-            lengthStructBuffer[pos++] = targetByte;
+            infoStructBuffer[pos++] = targetByte;
             targetByte = 0x00;
         }
     }
@@ -215,16 +216,16 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_length_struct * le
     /*
     ** XOR the length struct with the first 12 bytes of the key...
     */
-    for (i = 0;i < sizeof(clk_length_struct);i++) {
-        lengthStructBuffer[i] = lengthStructBuffer[i] ^ xorKey[i];
+    for (i = 0;i < sizeof(clk_info_struct);i++) {
+        infoStructBuffer[i] = infoStructBuffer[i] ^ xorKey[i];
     }
 
     /*
     ** Get the length struct out of the buffer...
     */
-    memcpy(lengthStruct, lengthStructBuffer, sizeof(clk_length_struct));
+    memcpy(infoStruct, infoStructBuffer, sizeof(clk_info_struct));
 
-    targetDataLength = lengthStruct->encryptedLength;
+    targetDataLength = infoStruct->encryptedLength;
 
     targetData = (uint8_t *)malloc(targetDataLength);
 

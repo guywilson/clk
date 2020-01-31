@@ -28,8 +28,6 @@ class EncryptionHelper
             XOR
         };
 
-        DataFile * seededXOR(DataFile * src, uint32_t seed);
-
         DataFile * encrypt(DataFile * src, Algorithm alg, uint8_t * key, uint32_t keyLength) {
             switch (alg) {
                 case AES_256:

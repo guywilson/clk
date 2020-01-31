@@ -15,6 +15,7 @@ extern "C" {
 #include "clk_error.h"
 #include "memutil.h"
 #include "passwordmgr.h"
+#include "crc32.h"
 #include "filestream.h"
 #include "datafile.h"
 #include "ImageStream.h"
@@ -51,10 +52,10 @@ void runTests()
     if (test_getKey()) {
         passCount++;
     }
-    if (test_encrypt_AES()) {
+    if (test_calculateCRC()) {
         passCount++;
     }
-    if (test_seededXOR()) {
+    if (test_encrypt_AES()) {
         passCount++;
     }
     if (test_PNG()) {
@@ -166,7 +167,8 @@ void hide(
 {
     EncryptionHelper    encryptionHelper;
     CloakHelper         cloakHelper;
-    clk_length_struct   ls;
+    clk_info_struct     info;
+    uint32_t            crc32;
 
     try {
         ImageInputStream is(inputImageName);
@@ -185,6 +187,12 @@ void hide(
         fis.close();
 
         /*
+        ** Calculate the CRC32 for the data...
+        */
+        CRC32Helper crcHelper;
+        crc32 = crcHelper.calculateCRC(inputFile);
+
+        /*
         ** Step 1: Encrypt the input file using the supplied algorithm...
         */
         DataFile * encrypted =
@@ -193,19 +201,21 @@ void hide(
         /*
         ** Setup the length structure...
         */
-        ls.originalLength = inputFile->getDataLength();
-        ls.encryptedLength = encrypted->getDataLength();
+        info.originalLength = inputFile->getDataLength();
+        info.encryptedLength = encrypted->getDataLength();
+        info.crc = crc32;
 
         cout << "Merge:" << endl;
-        cout << "    Original file len: " << ls.originalLength << endl;
-        cout << "    Encrypted len:     " << ls.encryptedLength << endl << endl;
+        cout << "    Original file len: " << info.originalLength << endl;
+        cout << "    Encrypted len:     " << info.encryptedLength << endl;
+        cout << "    CRC:               " << info.crc << endl << endl;
 
         /*
         ** Step 2: Merge the encrypted data with the 
         ** source image...
         */
         RGB24BitImage * mergedImage = 
-            cloakHelper.merge(inputImage, encrypted, &ls, quality);
+            cloakHelper.merge(inputImage, encrypted, &info, quality);
 
         ImageOutputStream os(outputImageName);
 
@@ -254,7 +264,8 @@ void reveal(
 {
     EncryptionHelper    encryptionHelper;
     CloakHelper         cloakHelper;
-    clk_length_struct   ls;
+    clk_info_struct     info;
+    uint32_t            crc32;
 
     try {
         ImageInputStream is(inputImageName);
@@ -270,17 +281,31 @@ void reveal(
         ** Step 1: Extract the data file from the source image...
         */
         DataFile * extracted = 
-            cloakHelper.extract(inputImage, &ls, quality);
+            cloakHelper.extract(inputImage, &info, quality);
 
         cout << "Extract:" << endl;
-        cout << "    Original file len: " << ls.originalLength << endl;
-        cout << "    Encrypted len:     " << ls.encryptedLength << endl << endl;
+        cout << "    Original file len: " << info.originalLength << endl;
+        cout << "    Encrypted len:     " << info.encryptedLength << endl;
+        cout << "    CRC:               " << info.crc << endl << endl;
 
         /*
         ** Step 2: Decrypt the file from step 2 using the supplied algorithm...
         */
         DataFile * outputFile = 
-            encryptionHelper.decrypt(extracted, algo, ls.originalLength, key, keyLength);
+            encryptionHelper.decrypt(extracted, algo, info.originalLength, key, keyLength);
+
+        /*
+        ** Calculate the CRC32 for the data...
+        */
+        CRC32Helper crcHelper;
+        crc32 = crcHelper.calculateCRC(outputFile);
+
+        if (crc32 != info.crc) {
+            throw clk_error(
+                "CRC failure. Either the image does not contain an encrypted file or the password is incorrect...", 
+                __FILE__, 
+                __LINE__);
+        }
 
         FileOutputStream fos(outputFileName);
 
