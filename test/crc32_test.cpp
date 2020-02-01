@@ -14,6 +14,7 @@ bool test_calculateCRC()
 {
     string          secretFileName = "LICENSE";
     uint32_t        crc;
+    uint32_t        verifiedCRC = 2540125440;
 
     cout << "In test_calculateCRC()" << endl;
 
@@ -28,9 +29,15 @@ bool test_calculateCRC()
 
         crc = crcHelper.calculateCRC(secretFile);
 
-        printf("Got CRC 0x%08X\n", crc);
-        
-        return true;
+        printf("Got CRC 0x%08X, verified CRC = 0x%08X\n", crc, verifiedCRC);
+
+        if (crc == verifiedCRC) {
+            cout << "CRC calculated correctly..." << endl;
+            return true;
+        }
+        else {
+            throw clk_error("Failed to calculate CRC-32 value", __FILE__, __LINE__);
+        }
     }
     catch (clk_error & ce) {
         cout << "Caught clk_error: " << ce.what() << endl;

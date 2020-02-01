@@ -225,6 +225,10 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_info_struct * info
     */
     memcpy(infoStruct, infoStructBuffer, sizeof(clk_info_struct));
 
+    if (srcImageDataLength < ((infoStruct->encryptedLength + numLengthBytes) * (8 / bitsPerByte))) {
+        throw clk_error("Validation error: The source image does not appear to contain a valid data file", __FILE__, __LINE__);
+    }
+
     targetDataLength = infoStruct->encryptedLength;
 
     targetData = (uint8_t *)malloc(targetDataLength);

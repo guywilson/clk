@@ -302,7 +302,7 @@ void reveal(
 
         if (crc32 != info.crc) {
             throw clk_error(
-                "CRC failure. Either the image does not contain an encrypted file or the password is incorrect...", 
+                "CRC validation failure. Either the image is corrupted or the password is incorrect...", 
                 __FILE__, 
                 __LINE__);
         }
