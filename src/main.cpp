@@ -259,6 +259,7 @@ void reveal(
         string & outputFileName, 
         CloakHelper::MergeQuality quality, 
         EncryptionHelper::Algorithm algo,
+        bool ignoreCRC,
         uint8_t * key,
         uint32_t keyLength)
 {
@@ -286,7 +287,13 @@ void reveal(
         cout << "Extract:" << endl;
         cout << "    Original file len: " << info.originalLength << endl;
         cout << "    Encrypted len:     " << info.encryptedLength << endl;
-        cout << "    CRC:               " << info.crc << endl << endl;
+
+        if (!ignoreCRC) {
+            cout << "    CRC:               " << info.crc << endl << endl;
+        }
+        else {
+            cout << endl;
+        }
 
         /*
         ** Step 2: Decrypt the file from step 2 using the supplied algorithm...
@@ -294,17 +301,19 @@ void reveal(
         DataFile * outputFile = 
             encryptionHelper.decrypt(extracted, algo, info.originalLength, key, keyLength);
 
-        /*
-        ** Calculate the CRC32 for the data...
-        */
-        CRC32Helper crcHelper;
-        crc32 = crcHelper.calculateCRC(outputFile);
+        if (!ignoreCRC) {
+            /*
+            ** Calculate the CRC32 for the data...
+            */
+            CRC32Helper crcHelper;
+            crc32 = crcHelper.calculateCRC(outputFile);
 
-        if (crc32 != info.crc) {
-            throw clk_error(
-                "CRC validation failure. Either the image is corrupted or the password is incorrect...", 
-                __FILE__, 
-                __LINE__);
+            if (crc32 != info.crc) {
+                throw clk_error(
+                    "CRC validation failure. Either the image is corrupted or the password is incorrect...", 
+                    __FILE__, 
+                    __LINE__);
+            }
         }
 
         FileOutputStream fos(outputFileName);
@@ -328,6 +337,7 @@ int main(int argc, char **argv)
     int                         i;
     CloakHelper::MergeQuality   quality = CloakHelper::High;
     bool                        isMerge = false;
+    bool                        ignoreCRC = false;
     char *                      arg;
     uint8_t *                   key = NULL;
     uint32_t                    keyLength;
@@ -355,6 +365,9 @@ int main(int argc, char **argv)
                 else if (strncmp(arg, "--version", 10) == 0) {
                     cout << "clk v" << getVersion() << " [" << getBuildDate() << "]" << endl << endl;
                     return 0;
+                }
+                else if (strncmp(arg, "--ignore-crc", 10) == 0) {
+                    ignoreCRC = true;
                 }
                 else if (strncmp(arg, "-f", 2) == 0) {
                     inputFileName.assign(argv[i + 1]);
@@ -489,6 +502,7 @@ int main(int argc, char **argv)
                 outputFileName, 
                 quality, 
                 alg,
+                ignoreCRC,
                 key, 
                 keyLength);
         }
