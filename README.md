@@ -8,7 +8,13 @@ The idea is simple, a 24-bit colour bitmap or PNG image uses 3 bytes for each pi
 
 Clk encrypts your 'secret' data file using the AES-256 cipher in CBC mode prior to encoding it in your chosen image. You will be prompted to enter a password (max 256 chars), the SHA-256 hash of which is used as the key for the pass through AES. 
 
-Clk can also encrypt using a supplied keystream file using simple XOR encryption, the advantage of this mechanism is you can employ a one-time-pad scheme, which providing you stick to the rules for a one-time-pad encryption scheme: 1) The key is truly random; 2) The key is used once and only once; 3) The key is at least as long as the file being encrypted, is mathematically proven to be unbreakable. Of course, any encryption scheme is useless if some third party has got hold of your encryption key.
+Clk can also encrypt using a supplied keystream file using simple XOR encryption, the advantage of this mechanism is you can employ a one-time-pad scheme, which providing you stick to the rules for a one-time-pad encryption scheme: 
+
+1) The key is truly random 
+2) The key is used once and only once 
+3) The key is at least as long as the file being encrypted 
+
+it is mathematically proven to be unbreakable. Of course, any encryption scheme is useless if some third party has got hold of your encryption key.
 
 Some tips regarding password strength
 -------------------------------------
