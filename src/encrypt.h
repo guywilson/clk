@@ -1,11 +1,13 @@
 #include <stdint.h>
 
+extern "C" {
+	#include <gcrypt.h>
+}
+
 #include "datafile.h"
 
 #ifndef _INCL_ENCRYPT
 #define _INCL_ENCRYPT
-
-#define BLOCK_SIZE			16
 
 class EncryptionHelper
 {
@@ -21,7 +23,7 @@ class EncryptionHelper
         DataFile *              decryptXOR(DataFile * src, uint8_t * key, uint32_t keyLength);
 
     public:
-        EncryptionHelper() {}
+        EncryptionHelper();
 
         enum Algorithm {
             AES_256,
