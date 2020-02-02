@@ -366,7 +366,7 @@ int main(int argc, char **argv)
                     cout << "clk v" << getVersion() << " [" << getBuildDate() << "]" << endl << endl;
                     return 0;
                 }
-                else if (strncmp(arg, "--ignore-crc", 10) == 0) {
+                else if (strncmp(arg, "--ignore-crc", 12) == 0) {
                     ignoreCRC = true;
                 }
                 else if (strncmp(arg, "-f", 2) == 0) {
