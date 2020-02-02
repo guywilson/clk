@@ -44,7 +44,7 @@ uint8_t * EncryptionHelper::encryptXOR(uint8_t * srcData, uint32_t srcDataLength
     uint8_t *               outputData;
 
     if (keyLength < srcDataLength) {
-        throw clk_error("Key length must be longer than plain text", __FILE__, __LINE__);
+        throw clk_error("Key length must be longer than the plain text", __FILE__, __LINE__);
     }
 
     outputData = (uint8_t *)malloc(srcDataLength);
