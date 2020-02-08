@@ -2,7 +2,7 @@
     "targets": [{
         "target_name": "cloak",
         "sources": [
-            "src/node_export.cpp"
+            "../cpp/src/node_export.cpp"
         ],
         'cflags!': [ '-fno-exceptions' ],
         'cflags_cc!': [ '-fno-exceptions' ],
