@@ -5,7 +5,7 @@
 #include <string>
 #include <stdlib.h>
 #include <string.h>
-#include <napi.h>
+#include <node_api.h>
 
 extern "C" {
 #include "version.h"
@@ -25,16 +25,40 @@ extern "C" {
 
 using namespace std;
 
-string version;
-
-string & cloak_api_version()
+napi_value init(napi_env env, napi_value exports)
 {
+    napi_status     status;
+    napi_value      fn;
+
+    status = napi_create_function(env, "getVersion", 10, cloak_api_version, nullptr, &fn);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "getVersion", fn);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    return exports;
+}
+
+napi_value cloak_api_version(napi_env env, napi_callback_info info)
+{
+    static string   version;
+    napi_status     status;
+    napi_value      value;
+
     version.assign(getVersion());
     version.append(" [");
     version.append(getBuildDate());
     version.append("]");
 
-    return version;
+    status = napi_create_string_utf8(env, version.c_str(), version.length(), &value);
+
+    return value;
 }
 
 void cloak_api_hide(
@@ -251,3 +275,5 @@ void cloak_api_reveal(
         throw e;
     }
 }
+
+NAPI_MODULE(NODE_GYP_MODULE_NAME, init)

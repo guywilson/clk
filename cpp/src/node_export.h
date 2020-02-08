@@ -10,6 +10,8 @@ using namespace std;
 #ifndef _INCL_NODE_EXPORT
 #define _INCL_NODE_EXPORT
 
+napi_value cloak_api_version(napi_env env, napi_callback_info info);
+
 void cloak_api_hide(
         string & inputImageName, 
         string & inputFileName, 
