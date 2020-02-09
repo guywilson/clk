@@ -1,5 +1,5 @@
 {
-  "name": "cloak",
+  "name": "file-cloak",
   "version": "1.0.0",
   "description": "Encrypt and hide a file in a 24-bit bitmap or PNG image",
   "main": "index.js",

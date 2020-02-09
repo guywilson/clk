@@ -1,6 +1,6 @@
 {
     "targets": [{
-        "target_name": "cloak",
+        "target_name": "file_cloak",
         "sources": [
             "../cpp/src/node_export.cpp"
         ],

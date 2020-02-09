@@ -1,4 +1,3 @@
-
 #define NAPI_CPP_EXCEPTIONS
 
 #include <stdlib.h>
