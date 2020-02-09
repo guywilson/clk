@@ -5,6 +5,7 @@
 #include <string>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <node_api.h>
 
 extern "C" {
@@ -25,18 +26,91 @@ extern "C" {
 
 using namespace std;
 
+char * getStringArgument(napi_env env, napi_value arg)
+{
+    char *          pszArg;
+    size_t          argLength;
+    napi_status     status;
+
+    status = napi_get_value_string_utf8(env, arg, NULL, 0, &argLength);
+
+    if (status != napi_ok) {
+        napi_throw_error(env, nullptr, "Failed to get length of argument");
+    }
+
+    pszArg = (char *)malloc(argLength + 1);
+
+    if (pszArg == NULL) {
+        napi_throw_error(env, nullptr, "Failed to allocate memory for argument");
+    }
+
+    status = napi_get_value_string_utf8(env, arg, pszArg, argLength + 1, &argLength);
+
+    if (status != napi_ok) {
+        napi_throw_error(env, nullptr, "Failed to get string value");
+    }
+
+    return pszArg;
+}
+
+int32_t getInt32Argument(napi_env env, napi_value arg)
+{
+    int32_t         argument;
+    napi_status     status;
+
+    status = napi_get_value_int32(env, arg, &argument);
+
+    return argument;
+}
+
+bool getBoolArgument(napi_env env, napi_value arg)
+{
+    bool            argument;
+    napi_status     status;
+
+    status = napi_get_value_bool(env, arg, &argument);
+
+    return argument;
+}
+
 napi_value init(napi_env env, napi_value exports)
 {
     napi_status     status;
-    napi_value      fn;
+    napi_value      fnVersion;
+    napi_value      fnHide;
+    napi_value      fnReveal;
 
-    status = napi_create_function(env, "getVersion", 10, cloak_api_version, nullptr, &fn);
+    status = napi_create_function(env, "getVersion", 10, cloak_api_version_wrapper, nullptr, &fnVersion);
 
     if (status != napi_ok) {
         return nullptr;
     }
 
-    status = napi_set_named_property(env, exports, "getVersion", fn);
+    status = napi_set_named_property(env, exports, "getVersion", fnVersion);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    status = napi_create_function(env, "hide", 4, cloak_api_hide_wrapper, nullptr, &fnHide);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "hide", fnHide);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    status = napi_create_function(env, "reveal", 6, cloak_api_reveal_wrapper, nullptr, &fnReveal);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "reveal", fnReveal);
 
     if (status != napi_ok) {
         return nullptr;
@@ -45,44 +119,218 @@ napi_value init(napi_env env, napi_value exports)
     return exports;
 }
 
-napi_value cloak_api_version(napi_env env, napi_callback_info info)
+napi_value cloak_api_version_wrapper(napi_env env, napi_callback_info info)
 {
-    static string   version;
+    string          version;
     napi_status     status;
     napi_value      value;
 
-    version.assign(getVersion());
-    version.append(" [");
-    version.append(getBuildDate());
-    version.append("]");
+    version = cloak_api_version();
 
     status = napi_create_string_utf8(env, version.c_str(), version.length(), &value);
 
     return value;
 }
 
+napi_value cloak_api_hide_wrapper(napi_env env, napi_callback_info info)
+{
+    napi_status     status;
+    napi_value      rtn;
+    size_t          argc = 7;
+    napi_value      argv[7];
+    char *          pszInputImageName;
+    char *          pszInputFileName;
+    char *          pszOutputImageName;
+    char *          pszPassword;
+    char *          pszOutputImageFormat;
+    char *          pszAlgorithm;
+    int             quality;
+
+    status = napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
+
+    if (status != napi_ok) {
+        napi_throw_error(env, nullptr, "Failed to parse arguments");
+    }
+
+    /*
+    ** Fetch the arguments...
+    */
+    pszInputImageName = getStringArgument(env, argv[0]);
+    pszInputFileName = getStringArgument(env, argv[1]);
+    pszOutputImageName = getStringArgument(env, argv[2]);
+    quality = getInt32Argument(env, argv[3]);
+    pszOutputImageFormat = getStringArgument(env, argv[4]);
+    pszAlgorithm = getStringArgument(env, argv[5]);
+    pszPassword = getStringArgument(env, argv[6]);
+
+    CloakHelper::MergeQuality q = CloakHelper::High;
+
+    switch (quality) {
+        case 1:
+            q = CloakHelper::High;
+            break;
+
+        case 2:
+            q = CloakHelper::Medium;
+            break;
+
+        case 4:
+            q = CloakHelper::Low;
+            break;
+
+        default:
+            napi_throw_error(env, nullptr, "Invalid merge quality, must be 1, 2 or 4");
+    }
+
+    ImageFormat f = PNGImage;
+
+    if (strcmp(pszOutputImageFormat, "BMP") == 0) {
+        f = BitmapImage;
+    }
+    else if (strcmp(pszOutputImageFormat, "PNG") == 0) {
+        f = PNGImage;
+    }
+    else {
+        napi_throw_error(env, nullptr, "Invalid output image format, only 'BMP' and 'PNG' are supported");
+    }
+
+    EncryptionHelper::Algorithm a = EncryptionHelper::AES_256;
+
+    if (strcmp(pszAlgorithm, "AES-256") == 0) {
+        a = EncryptionHelper::AES_256;
+    }
+    else if (strcmp(pszAlgorithm, "XOR") == 0) {
+        a = EncryptionHelper::XOR;
+    }
+    else {
+        napi_throw_error(env, nullptr, "Invalid encryption algorithm, only 'AES-256' and 'XOR' are supported");
+    }
+
+    cloak_api_hide(
+        pszInputImageName, 
+        pszInputFileName, 
+        pszOutputImageName, 
+        q, 
+        f, 
+        a, 
+        pszPassword);
+
+    status = napi_create_int32(env, 0, &rtn);
+
+    if (status != napi_ok) {
+        napi_throw_error(env, nullptr, "Failed to set return value");
+    }
+
+    return rtn;
+}
+
+napi_value cloak_api_reveal_wrapper(napi_env env, napi_callback_info info)
+{
+    napi_status     status;
+    napi_value      rtn;
+    size_t          argc = 6;
+    napi_value      argv[6];
+    char *          pszInputImageName;
+    char *          pszOutputFileName;
+    char *          pszPassword;
+    char *          pszAlgorithm;
+    bool            ignoreCRC;
+    int             quality;
+
+    status = napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
+
+    if (status != napi_ok) {
+        napi_throw_error(env, nullptr, "Failed to parse arguments");
+    }
+
+    /*
+    ** Fetch the arguments...
+    */
+    pszInputImageName = getStringArgument(env, argv[0]);
+    pszOutputFileName = getStringArgument(env, argv[1]);
+    quality = getInt32Argument(env, argv[2]);
+    pszAlgorithm = getStringArgument(env, argv[3]);
+    ignoreCRC = getBoolArgument(env, argv[4]);
+    pszPassword = getStringArgument(env, argv[5]);
+
+    CloakHelper::MergeQuality q = CloakHelper::High;
+
+    switch (quality) {
+        case 1:
+            q = CloakHelper::High;
+            break;
+
+        case 2:
+            q = CloakHelper::Medium;
+            break;
+
+        case 4:
+            q = CloakHelper::Low;
+            break;
+
+        default:
+            napi_throw_error(env, nullptr, "Invalid merge quality, must be 1, 2 or 4");
+    }
+
+    EncryptionHelper::Algorithm a = EncryptionHelper::AES_256;
+
+    if (strcmp(pszAlgorithm, "AES-256") == 0) {
+        a = EncryptionHelper::AES_256;
+    }
+    else if (strcmp(pszAlgorithm, "XOR") == 0) {
+        a = EncryptionHelper::XOR;
+    }
+    else {
+        napi_throw_error(env, nullptr, "Invalid encryption algorithm, only 'AES-256' and 'XOR' are supported");
+    }
+
+    cloak_api_reveal(
+        pszInputImageName, 
+        pszOutputFileName, 
+        q, 
+        a,
+        ignoreCRC,
+        pszPassword);
+
+    status = napi_create_int32(env, 0, &rtn);
+
+    if (status != napi_ok) {
+        napi_throw_error(env, nullptr, "Failed to set return value");
+    }
+
+    return rtn;
+}
+
+
+string & cloak_api_version()
+{
+    static string   version;
+
+    version.assign(getVersion());
+    version.append(" [");
+    version.append(getBuildDate());
+    version.append("]");
+
+    return version;
+}
+
 void cloak_api_hide(
-        string & inputImageName, 
-        string & inputFileName, 
-        string & outputImageName, 
+        char * pszInputImageName, 
+        char * pszInputFileName, 
+        char * pszOutputImageName, 
         CloakHelper::MergeQuality quality, 
         ImageFormat outputImageFormat, 
         EncryptionHelper::Algorithm algo,
-        string & password)
+        char * pszPassword)
 {
     uint8_t *           key;
     uint32_t            keyLength;
-    char *              pszPassword;
     EncryptionHelper    encryptionHelper;
     CloakHelper         cloakHelper;
     clk_info_struct     info;
     uint32_t            crc32;
 
     try {
-        pszPassword = strdup(password.c_str());
-
-        password.clear();
-
         keyLength = PasswordManager::getKeyByteLength();
 
         key = (uint8_t *)malloc(keyLength);
@@ -96,16 +344,16 @@ void cloak_api_hide(
 
         memclr(pszPassword, strlen(pszPassword));
 
-        ImageInputStream is(inputImageName);
-
         /*
         ** Open the input image...
         */
+        ImageInputStream is(pszInputImageName);
+
         is.open();
         RGB24BitImage * inputImage = is.read();
         is.close();
 
-        FileInputStream fis(inputFileName);
+        FileInputStream fis(pszInputFileName);
 
         fis.open();
         DataFile * inputFile = fis.read();
@@ -142,7 +390,7 @@ void cloak_api_hide(
         RGB24BitImage * mergedImage = 
             cloakHelper.merge(inputImage, encrypted, &info, quality);
 
-        ImageOutputStream os(outputImageName);
+        ImageOutputStream os(pszOutputImageName);
 
         if (outputImageFormat == PNGImage && mergedImage->getFormat() == BitmapImage) {
             RGB24BitImage * outImg = new PNG((Bitmap *)mergedImage);
@@ -174,32 +422,27 @@ void cloak_api_hide(
         delete inputImage;
     }
     catch (clk_error & e) {
-        cout << "Failed to hide file " << inputFileName << " in image file " << inputImageName << " - " << e.what() << endl;
+        cout << "Failed to hide file " << pszInputFileName << " in image file " << pszInputImageName << " - " << e.what() << endl;
         throw e;
     }
 }
 
 void cloak_api_reveal(
-        string & inputImageName, 
-        string & outputFileName, 
+        char * pszInputImageName, 
+        char * pszOutputFileName, 
         CloakHelper::MergeQuality quality, 
         EncryptionHelper::Algorithm algo,
         bool ignoreCRC,
-        string & password)
+        char * pszPassword)
 {
     uint8_t *           key;
     uint32_t            keyLength;
-    char *              pszPassword;
     EncryptionHelper    encryptionHelper;
     CloakHelper         cloakHelper;
     clk_info_struct     info;
     uint32_t            crc32;
 
     try {
-        pszPassword = strdup(password.c_str());
-
-        password.clear();
-
         keyLength = PasswordManager::getKeyByteLength();
 
         key = (uint8_t *)malloc(keyLength);
@@ -213,7 +456,7 @@ void cloak_api_reveal(
 
         memclr(pszPassword, strlen(pszPassword));
 
-        ImageInputStream is(inputImageName);
+        ImageInputStream is(pszInputImageName);
 
         /*
         ** Open the input image...
@@ -260,7 +503,7 @@ void cloak_api_reveal(
             }
         }
 
-        FileOutputStream fos(outputFileName);
+        FileOutputStream fos(pszOutputFileName);
 
         fos.open();
         fos.write(outputFile);
@@ -271,7 +514,7 @@ void cloak_api_reveal(
         delete inputImage;
     }
     catch (clk_error & e) {
-        cout << "Failed to reveal file from image file " << inputImageName << " - " << e.what() << endl;
+        cout << "Failed to reveal file from image file " << pszInputImageName << " - " << e.what() << endl;
         throw e;
     }
 }

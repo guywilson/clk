@@ -42,6 +42,10 @@ class ImageStream
             this->filename = filename;
         }
 
+        ImageStream(char * filename) {
+            this->filename.assign(filename);
+        }
+
         virtual void    open() = 0;
 
         void            close() {
@@ -57,6 +61,7 @@ class ImageInputStream : public ImageStream
 
     public:
         ImageInputStream(string & filename);
+        ImageInputStream(char * filename);
 
         virtual void    open();
 
@@ -71,6 +76,7 @@ class ImageOutputStream : public ImageStream
         
     public:
         ImageOutputStream(string & filename);
+        ImageOutputStream(char * filename);
 
         virtual void    open();
 

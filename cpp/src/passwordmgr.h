@@ -23,7 +23,7 @@ class PasswordManager
             this->keyLength = keylen;
         }
 
-        static const uint32_t getKeyByteLength() {
+        static uint32_t getKeyByteLength() {
             return (256 / 8);
         }
 

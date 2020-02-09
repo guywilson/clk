@@ -74,6 +74,11 @@ ImageInputStream::ImageInputStream(string & filename) : ImageStream(filename)
 
 }
 
+ImageInputStream::ImageInputStream(char * filename) : ImageStream(filename)
+{
+
+}
+
 PNG * ImageInputStream::_readPNG()
 {
     PNG *           png;
@@ -289,6 +294,11 @@ RGB24BitImage * ImageInputStream::read()
 
 
 ImageOutputStream::ImageOutputStream(string & filename) : ImageStream(filename)
+{
+
+}
+
+ImageOutputStream::ImageOutputStream(char * filename) : ImageStream(filename)
 {
 
 }
