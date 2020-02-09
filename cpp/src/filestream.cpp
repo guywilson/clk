@@ -20,12 +20,9 @@ void FileInputStream::open()
     this->setFilePtr(fptr);
 }
 
-DataFile * FileInputStream::read()
+uint32_t FileInputStream::getFilelength()
 {
-    DataFile *      df;
     uint32_t        fileLength;
-    uint8_t *       fileData;
-    uint32_t        bytesRead;
 
     /*
     ** Find out the length of the file...
@@ -34,6 +31,18 @@ DataFile * FileInputStream::read()
     fileLength = ftell(this->getFilePtr());
     fseek(this->getFilePtr(), 0L, SEEK_SET);
 
+    return fileLength;
+}
+
+DataFile * FileInputStream::read()
+{
+    DataFile *      df;
+    uint32_t        fileLength;
+    uint8_t *       fileData;
+    uint32_t        bytesRead;
+
+    fileLength = getFilelength();
+    
     fileData = (uint8_t *)malloc(fileLength);
 
     if (fileData == NULL) {

@@ -34,6 +34,25 @@ string & cloak_api_version()
     return version;
 }
 
+uint32_t cloak_api_filelength(char * pszFileName)
+{
+    uint32_t        fileLength;
+
+    try {
+        FileInputStream is(pszFileName);
+
+        is.open();
+        fileLength = is.getFilelength();
+        is.close();
+    }
+    catch (clk_error & e) {
+        cout << "Failed to get file length from " << pszFileName << " - " << e.what() << endl;
+        throw e;
+    }
+
+    return fileLength;
+}
+
 void cloak_api_hide(
         char * pszInputImageName, 
         char * pszInputFileName, 

@@ -11,6 +11,8 @@ using namespace std;
 
 string & cloak_api_version();
 
+uint32_t cloak_api_filelength(char * pszFileName);
+
 void cloak_api_hide(
         char * pszInputImageName, 
         char * pszInputFileName, 

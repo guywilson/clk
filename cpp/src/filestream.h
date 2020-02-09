@@ -48,6 +48,8 @@ class FileInputStream : public FileStream
 
         virtual void    open();
 
+        uint32_t        getFilelength();
+
         DataFile *      read();
 };
 

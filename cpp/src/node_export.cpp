@@ -65,6 +65,7 @@ napi_value init(napi_env env, napi_value exports)
     napi_value      fnVersion;
     napi_value      fnHide;
     napi_value      fnReveal;
+    napi_value      fnFilelength;
 
     status = napi_create_function(env, "getVersion", 10, cloak_api_version_wrapper, nullptr, &fnVersion);
 
@@ -73,6 +74,18 @@ napi_value init(napi_env env, napi_value exports)
     }
 
     status = napi_set_named_property(env, exports, "getVersion", fnVersion);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    status = napi_create_function(env, "getFilelength", 13, cloak_api_filelength_wrapper, nullptr, &fnFilelength);
+
+    if (status != napi_ok) {
+        return nullptr;
+    }
+
+    status = napi_set_named_property(env, exports, "getFilelength", fnFilelength);
 
     if (status != napi_ok) {
         return nullptr;
@@ -114,6 +127,30 @@ napi_value cloak_api_version_wrapper(napi_env env, napi_callback_info info)
     version = cloak_api_version();
 
     status = napi_create_string_utf8(env, version.c_str(), version.length(), &value);
+
+    return value;
+}
+
+napi_value cloak_api_filelength_wrapper(napi_env env, napi_callback_info info)
+{
+    uint32_t        fileLength;
+    char *          pszFilename;
+    size_t          argc = 1;
+    napi_value      argv[1];
+    napi_status     status;
+    napi_value      value;
+
+    status = napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
+
+    if (status != napi_ok) {
+        napi_throw_error(env, nullptr, "Failed to parse arguments");
+    }
+
+    pszFilename = getStringArgument(env, argv[0]);
+
+    fileLength = cloak_api_filelength(pszFilename);
+
+    status = napi_create_uint32(env, fileLength, &value);
 
     return value;
 }
