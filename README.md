@@ -41,7 +41,7 @@ Build clk using the system make utility, e.g. on Linux/macOs
 
 Using Clk
 -----------
-Type Cloak --help to get help on the command line parameters.
+Type clk --help to get help on the command line parameters.
 
 I have included a sample PNG file with this distribution - flowers_out.png which has the LICENSE encoded within it, the password used to encrypt the file is 'password', you should use a strong password, see the tips above.
 
@@ -56,6 +56,14 @@ To 'uncloak' the file from flowers_out.png, you can use the following command:
     clk -o LICENSE.out -q 1 flowers_out.png
     
 This tells Cloak to use extract mode to extract the file 'LICENSE.out' from the input image 'flowers_out.png', again using 1-bit per byte.
+
+Node module
+-----------
+Clk also has a node add-on module - cloak.node built using node-gyp, the source for the interface is in node_export.cpp and implements the following methods:
+
+    getVersion()
+    hide()
+    reveal()
 
 Tips
 ----
