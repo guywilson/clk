@@ -45,7 +45,7 @@ Type clk --help to get help on the command line parameters.
 
 I have included a sample PNG file with this distribution - flowers_out.png which has the LICENSE encoded within it, the password used to encrypt the file is 'password', you should use a strong password, see the tips above.
 
-For example, to 'cloak' a file within Lenna.png I used the following command:
+For example, to 'cloak' a file within flowers.png I used the following command:
 
     clk -o flowers_out.png -of PNG -f LICENSE -q 1 flowers.png
     
