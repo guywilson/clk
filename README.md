@@ -37,33 +37,29 @@ Build clk using the system make utility, e.g. on Linux/macOs
 
     make
 
-![flowers_out.png](flowers_out.png)
+![Lenna_out.png](Lenna_out.png)
 
 Using Clk
 -----------
 Type clk --help to get help on the command line parameters.
 
-I have included a sample PNG file with this distribution - flowers_out.png which has the LICENSE encoded within it, the password used to encrypt the file is 'password', you should use a strong password, see the tips above.
+I have included a sample PNG file with this distribution - Lenna_out.png (see https://en.wikipedia.org/wiki/Lenna) which has the LICENSE encoded within it, the password used to encrypt the file is 'password', you should use a strong password, see the tips above.
 
-For example, to 'cloak' a file within flowers.png I used the following command:
+For example, to 'cloak' a file within Lenna.png I used the following command:
 
-    clk -o flowers_out.png -of PNG -f LICENSE -q 1 flowers.png
+    clk -o Lenna_out.png -of PNG -f LICENSE -q 1 Lenna.png
     
-This tells Clk to use merge the file 'LICENSE' into the image 'flowers.png' and output the new image 'flowers_out.png' using an encoding depth of 1-bit per byte.
+This tells Clk to use merge the file 'LICENSE' into the image 'Lenna.png' and output the new image 'Lenna_out.png' using an encoding depth of 1-bit per byte.
 
 To 'uncloak' the file from flowers_out.png, you can use the following command:
 
-    clk -o LICENSE.out -q 1 flowers_out.png
+    clk -o LICENSE.out -q 1 Lenna_out.png
     
-This tells Cloak to use extract mode to extract the file 'LICENSE.out' from the input image 'flowers_out.png', again using 1-bit per byte.
+This tells Cloak to use extract mode to extract the file 'LICENSE.out' from the input image 'Lenna_out.png', again using 1-bit per byte.
 
 Node module
 -----------
-Clk also has a node add-on module - cloak.node built using node-gyp, the source for the interface is in node_export.cpp and implements the following methods:
-
-    getVersion()
-    hide()
-    reveal()
+Clk also has a node add-on module - cloak.node built using node-gyp, the source for the interface is in node_export.cpp and is on npmjs.com as the package file-cloak https://www.npmjs.com/package/file-cloak.
 
 Tips
 ----
