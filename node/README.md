@@ -1,6 +1,6 @@
 # file-cloak
 
-This node.js package is an implemented by the code from my clk C++ repository and compiled using node-gyp.
+This node.js package is implemented by the code from my clk C++ repository and compiled using node-gyp.
 
 Hide and extract an encrypted file within an RGB (24-bit) bitmap or PNG image.
 ------------------------------------------------------------------------------
@@ -58,7 +58,6 @@ file-cloak implements the following methods:
 Tips
 ----
 * In the case of PNG files, you may notice that the output PNG image from Clk is a different size than the input image, they are identical in content, it is simply that PNG compression will likely result in different size files. This is the key difference between PNG images and 24-bit bitmap images, PNG is compressed whereas bitmap (bmp) is generally not. If you use a bitmap (bmp) file with Clk you will see that the input and output .bmp files will be exactly the same size.
-* Try to use an image that is quite 'busy', the flowers.png supplied here is a good example. If you use an image with large areas of a single colour, it may be possible (but unlikely) to spot something encoded within the image, particularly if it is examined with a hex editor for example.
 
 Have fun!
 
