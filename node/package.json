@@ -1,6 +1,6 @@
 {
-  "name": "file-cloak",
-  "version": "1.0.2",
+  "name": "cloakfile",
+  "version": "1.0.3",
   "description": "Encrypt and hide a file in a 24-bit bitmap or PNG image",
   "main": "index.js",
   "gypfile": true,
