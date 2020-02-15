@@ -98,6 +98,7 @@ $(DEP)/%.d: ;
 install: $(TARGET)
 	cp $(TARGET) /usr/local/bin
 	cp $(LIB)/$(LIBTARGET) /usr/local/lib
+	cp $(SOURCE)/clk.h /usr/local/include
 
 version:
 	$(VBUILD) -incfile clk.ver -template version.c.template -out $(SOURCE)/version.c -major $(MAJOR_VERSION) -minor $(MINOR_VERSION)
