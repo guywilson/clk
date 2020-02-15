@@ -3,22 +3,22 @@
 
 #ifdef __cplusplus
 extern "C" {
-#include "version.h"
+#include <clk/version.h>
 }
 #else
-#include "version.h"
+#include <clk/version.h>
 #endif
 
-#include "clk_error.h"
-#include "memutil.h"
-#include "passwordmgr.h"
-#include "crc32.h"
-#include "filestream.h"
-#include "datafile.h"
-#include "ImageStream.h"
-#include "image.h"
-#include "encrypt.h"
-#include "cloak.h"
-#include "cloak_api.h"
+#include <clk/clk_error.h>
+#include <clk/memutil.h>
+#include <clk/passwordmgr.h>
+#include <clk/crc32.h>
+#include <clk/filestream.h>
+#include <clk/datafile.h>
+#include <clk/ImageStream.h>
+#include <clk/image.h>
+#include <clk/encrypt.h>
+#include <clk/cloak.h>
+#include <clk/cloak_api.h>
 
 #endif
