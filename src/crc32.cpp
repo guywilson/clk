@@ -50,7 +50,7 @@ uint32_t CRC32Helper::calculateCRC(DataFile * src)
     uint8_t *       data;
     uint32_t        dataLength;
     uint32_t        crc = 0xffffffff; //Initilaize the CRC...
-    int             i;
+    uint32_t        i;
 
     data = src->getData();
     dataLength = src->getDataLength();

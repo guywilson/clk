@@ -24,7 +24,7 @@ bool test_getKey()
     mgr.getKey(key, szPassword);
 
     printf("Key for password [%s] is: ", szPassword);
-    for (int i = 0;i < keyLength;i++) {
+    for (uint32_t i = 0;i < keyLength;i++) {
         printf("%2X", key[i]);
     }
     printf("\n\n");

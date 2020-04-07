@@ -53,7 +53,7 @@ uint8_t * EncryptionHelper::encryptXOR(uint8_t * srcData, uint32_t srcDataLength
         throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
     }
 
-    for (int i = 0;i < srcDataLength;i++) {
+    for (uint32_t i = 0;i < srcDataLength;i++) {
         outputData[i] = srcData[i] ^ key[i];
     }
 

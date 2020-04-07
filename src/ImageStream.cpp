@@ -199,27 +199,45 @@ Bitmap * ImageInputStream::_readBMP()
     uint32_t        DIBHeaderSize;
     uint8_t *       data;
     BitmapType      type;
-    Bitmap *        bmp;
+    Bitmap *        bmp = nullptr;
+    size_t          bytesRead;
 
 	/*
 	** Read bitmap header...
 	*/
-	fread(headerBuffer, 1, BMP_HEADER_SIZE, getFilePtr());
-    memcpy(&bmpHeader, headerBuffer, BMP_HEADER_SIZE);
+	bytesRead = fread(headerBuffer, 1, BMP_HEADER_SIZE, getFilePtr());
+
+    if (bytesRead == BMP_HEADER_SIZE) {
+        memcpy(&bmpHeader, headerBuffer, BMP_HEADER_SIZE);
+    }
+    else {
+        throw clk_error(clk_error::buildMsg("Failed to read bitmap header, read %u bytes", bytesRead), __FILE__, __LINE__);
+    }
     
-	fread(DIBHeaderBuffer, 1, 4, getFilePtr());
-    DIBHeaderSize = (uint32_t)DIBHeaderBuffer[0];
+	bytesRead = fread(DIBHeaderBuffer, 1, 4, getFilePtr());
 
-	fread(&DIBHeaderBuffer[4], 1, DIBHeaderSize - 4, getFilePtr());
+    if (bytesRead == 4) {
+        DIBHeaderSize = (uint32_t)DIBHeaderBuffer[0];
+    }
+    else {
+        throw clk_error(clk_error::buildMsg("Failed to read DIB header length, read %u bytes", bytesRead), __FILE__, __LINE__);
+    }
 
-	if (DIBHeaderSize == WINV3_HEADER_SIZE) {
-		type = WindowsV3;
+	bytesRead = fread(&DIBHeaderBuffer[4], 1, DIBHeaderSize - 4, getFilePtr());
 
-        memcpy(&dibHeader, DIBHeaderBuffer, DIBHeaderSize);
-	}
-	else {
-        throw clk_error("Invalid bitmap type", __FILE__, __LINE__);
-	}
+    if (bytesRead == (DIBHeaderSize - 4)) {
+        if (DIBHeaderSize == WINV3_HEADER_SIZE) {
+            type = WindowsV3;
+
+            memcpy(&dibHeader, DIBHeaderBuffer, DIBHeaderSize);
+        }
+        else {
+            throw clk_error("Invalid bitmap type", __FILE__, __LINE__);
+        }
+    }
+    else {
+        throw clk_error(clk_error::buildMsg("Failed to read DIB header, read %u bytes", bytesRead), __FILE__, __LINE__);
+    }
 
     if (dibHeader.bitsPerPixel != 24) {
         throw clk_error("Image must be 24-bit", __FILE__, __LINE__);
@@ -245,10 +263,15 @@ Bitmap * ImageInputStream::_readBMP()
         throw clk_error("Failed to allocate memory", __FILE__, __LINE__);
 	}
 
-	fread(data, 1, dibHeader.dataLength, getFilePtr());
+	bytesRead = fread(data, 1, dibHeader.dataLength, getFilePtr());
 
-    bmp = new Bitmap(data, dibHeader.dataLength, dibHeader.width, dibHeader.height);
-    bmp->setType(type);
+    if (bytesRead == dibHeader.dataLength) {
+        bmp = new Bitmap(data, dibHeader.dataLength, dibHeader.width, dibHeader.height);
+        bmp->setType(type);
+    }
+    else {
+        throw clk_error(clk_error::buildMsg("Failed to read bitmap data, read %u bytes and expected %u bytes", bytesRead, dibHeader.dataLength), __FILE__, __LINE__);
+    }
 
     return bmp;
 }

@@ -347,7 +347,7 @@ int main(int argc, char **argv)
     string                      outputFileName;
     string                      keystreamFileName;
     string                      outputImageFormat;
-    ImageFormat                 outputImageFmt;
+    ImageFormat                 outputImageFmt = UnsupportedFormat;
 
     if (argc > 1) {
         for (i = 1;i < argc;i++) {

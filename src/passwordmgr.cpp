@@ -30,6 +30,10 @@ void PasswordManager::getKey(uint8_t * key, void * input, uint32_t inputLength)
 		case Low:
 			alg = GCRY_MD_BLAKE2S_128;
 			break;
+
+		default:
+			alg = GCRY_MD_SHA3_256;
+			break;
 	}
 
 	/*
