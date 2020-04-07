@@ -32,8 +32,8 @@ PRECOMPILE = @ mkdir -p $(BUILD) $(DEP)
 # postcompile step
 POSTCOMPILE = @ mv -f $(DEP)/$*.Td $(DEP)/$*.d
 
-CPPFLAGS = -c -O2 -Wall -pedantic -std=c++11
-CFLAGS = -c -O2 -Wall -pedantic
+CPPFLAGS = -c -O2 -Wall -pedantic -fPIC -std=c++11
+CFLAGS = -c -O2 -Wall -pedantic -fPIC
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP)/$*.Td
 
 # Libraries
@@ -64,7 +64,7 @@ $(TARGET): $(OBJFILES) $(BUILD)/main.o $(TSTOBJFILES)
 	$(LINK.o) $^ $(EXTLIBS)
 
 $(LIBTARGET): $(OBJFILES)
-	$(LINKER) -dynamiclib -o $(LIB)/$(LIBTARGET) $^ $(EXTLIBS)
+	$(LINKER) -shared -o $(LIB)/$(LIBTARGET) $^ $(EXTLIBS)
 
 $(BUILD)/%.o: $(SOURCE)/%.c
 $(BUILD)/%.o: $(SOURCE)/%.c $(DEP)/%.d
