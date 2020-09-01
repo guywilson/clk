@@ -4,7 +4,7 @@
 #include <signal.h>
 
 #include "logger.h"
-#include "wctl_error.h"
+#include "clk_error.h"
 #include "posixthread.h"
 
 static void * _threadRunner(void * pThreadArgs)
@@ -20,7 +20,7 @@ static void * _threadRunner(void * pThreadArgs)
 		try {
 			pThreadRtn = pThread->run();
 		}
-		catch (wctl_error & e) {
+		catch (clk_error & e) {
 			log.logError("_threadRunner: Caught exception %s", e.what());
 		}
 

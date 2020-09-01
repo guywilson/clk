@@ -6,8 +6,6 @@
 
 #include "mongoose.h"
 #include "currenttime.h"
-#include "configmgr.h"
-#include "postdata.h"
 
 extern "C" {
 #include "version.h"

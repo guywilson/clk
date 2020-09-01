@@ -1,6 +1,11 @@
 #include <iostream>
 #include <string>
 #include <stdlib.h>
+#include <signal.h>
+#include <syslog.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <conio.h>
@@ -83,7 +88,7 @@ void runTests()
     cout << endl << "Ran " << runCount << " tests, " << passCount << " passed, " << (runCount - passCount) << " failed." << endl;
 }
 
-void daemonise()
+void deamonise()
 {
 	pid_t			pid;
 	pid_t			sid;
@@ -385,7 +390,7 @@ int main(int argc, char **argv)
     CloakHelper::MergeQuality   quality = CloakHelper::High;
     bool                        isMerge = false;
     bool                        ignoreCRC = false;
-	bool						deamonise = false;
+	bool						isDeamon = false;
     char *                      arg;
     uint8_t *                   key = NULL;
     uint32_t                    keyLength;
@@ -418,7 +423,7 @@ int main(int argc, char **argv)
                     ignoreCRC = true;
                 }
 				else if (strncmp(arg, "--deamon", 8) == 0 || strncmp(arg, "-d", 2) == 0) {
-					deamonise = true;
+					isDeamon = true;
 				}
                 else if (strncmp(arg, "-f", 2) == 0) {
                     inputFileName.assign(argv[i + 1]);
@@ -476,7 +481,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-	if (deamonise) {
+	if (isDeamon) {
 		deamonise();
 	}
 	

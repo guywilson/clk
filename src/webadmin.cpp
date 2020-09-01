@@ -5,10 +5,9 @@
 #include <string.h>
 #include <curl/curl.h>
 
-#include "wctl_error.h"
+#include "clk_error.h"
 #include "webadmin.h"
 #include "logger.h"
-#include "configmgr.h"
 
 extern "C" {
 #include "mongoose.h"
@@ -32,7 +31,7 @@ static void nullHandler(struct mg_connection * connection, int event, void * p)
 			pszMethod = (char *)malloc(message->method.len + 1);
 
 			if (pszMethod == NULL) {
-				throw wctl_error(wctl_error::buildMsg("Failed to allocate %d bytes for method...", message->method.len + 1), __FILE__, __LINE__);
+				throw clk_error(clk_error::buildMsg("Failed to allocate %d bytes for method...", message->method.len + 1), __FILE__, __LINE__);
 			}
 
 			memcpy(pszMethod, message->method.p, message->method.len);
@@ -41,7 +40,7 @@ static void nullHandler(struct mg_connection * connection, int event, void * p)
 			pszURI = (char *)malloc(message->uri.len + 1);
 
 			if (pszURI == NULL) {
-				throw wctl_error(wctl_error::buildMsg("Failed to allocate %d bytes for URI...", message->uri.len + 1), __FILE__, __LINE__);
+				throw clk_error(clk_error::buildMsg("Failed to allocate %d bytes for URI...", message->uri.len + 1), __FILE__, __LINE__);
 			}
 
 			memcpy(pszURI, message->uri.p, message->uri.len);
@@ -62,11 +61,8 @@ static void nullHandler(struct mg_connection * connection, int event, void * p)
 
 WebAdmin::WebAdmin()
 {
-	const char *		pszToken;
+	const char *		pszToken = "./resources";
 
-	ConfigManager & cfg = ConfigManager::getInstance();
-
-	pszToken = cfg.getValue("admin.docroot");
 	strcpy(this->szHTMLDocRoot, pszToken);
 	strcat(this->szHTMLDocRoot, "/html");
 	strcpy(this->szCSSDocRoot, pszToken);
@@ -81,23 +77,15 @@ void WebAdmin::initListener()
 	char				szPort[16];
 	struct mg_bind_opts opts;
 
-	ConfigManager & cfg = ConfigManager::getInstance();
 	Logger & log = Logger::getInstance();
 	
 	memset(&opts, 0, sizeof(mg_bind_opts));
 
-	strcpy(szPort, cfg.getValue("admin.listenport"));
+	strcpy(szPort, "3000");
 
 	mg_mgr_init(&mgr, NULL);
 
 	log.logStatus("Setting up listener on port %s", szPort);
-
-#ifdef MG_ENABLE_SSL
-	if (cfg.getValueAsBoolean("admin.issecure")) {
-		opts.ssl_cert = cfg.getValue("admin.sslcert");
-		opts.ssl_key = cfg.getValue("admin.sslkey");
-	}
-#endif
 
 	connection = mg_bind_opt(
 					&mgr, 
@@ -107,7 +95,7 @@ void WebAdmin::initListener()
 
 	if (connection == NULL) {
 		log.logError("Failed to bind to port %s", szPort);
-		throw wctl_error(wctl_error::buildMsg("Faled to bind to port %s", szPort), __FILE__, __LINE__);
+		throw clk_error(clk_error::buildMsg("Faled to bind to port %s", szPort), __FILE__, __LINE__);
 	}
 
 	log.logStatus("Bound default handler to %s...", szPort);
