@@ -83,6 +83,53 @@ void runTests()
     cout << endl << "Ran " << runCount << " tests, " << passCount << " passed, " << (runCount - passCount) << " failed." << endl;
 }
 
+void daemonise()
+{
+	pid_t			pid;
+	pid_t			sid;
+
+	fprintf(stdout, "Starting daemon...\n");
+	fflush(stdout);
+
+	do {
+		pid = fork();
+	}
+	while ((pid == -1) && (errno == EAGAIN));
+
+	if (pid < 0) {
+		fprintf(stderr, "Forking daemon failed...\n");
+		fflush(stderr);
+		exit(EXIT_FAILURE);
+	}
+	if (pid > 0) {
+		fprintf(stdout, "Exiting child process...\n");
+		fflush(stdout);
+		exit(EXIT_SUCCESS);
+	}
+
+	sid = setsid();
+	
+	if(sid < 0) {
+		fprintf(stderr, "Failed calling setsid()...\n");
+		fflush(stderr);
+		exit(EXIT_FAILURE);
+	}
+
+	signal(SIGCHLD, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);    
+	
+	umask(0);
+
+	if((chdir("/") == -1)) {
+		fprintf(stderr, "Failed changing directory\n");
+		fflush(stderr);
+		exit(EXIT_FAILURE);
+	}
+	
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+}
+
 /*
 ** Under windows, this uses getch(), under a different OS
 ** getch() probably won't be available, so you will have
@@ -338,6 +385,7 @@ int main(int argc, char **argv)
     CloakHelper::MergeQuality   quality = CloakHelper::High;
     bool                        isMerge = false;
     bool                        ignoreCRC = false;
+	bool						deamonise = false;
     char *                      arg;
     uint8_t *                   key = NULL;
     uint32_t                    keyLength;
@@ -369,6 +417,9 @@ int main(int argc, char **argv)
                 else if (strncmp(arg, "--ignore-crc", 12) == 0) {
                     ignoreCRC = true;
                 }
+				else if (strncmp(arg, "--deamon", 8) == 0 || strncmp(arg, "-d", 2) == 0) {
+					deamonise = true;
+				}
                 else if (strncmp(arg, "-f", 2) == 0) {
                     inputFileName.assign(argv[i + 1]);
                 }
@@ -425,6 +476,10 @@ int main(int argc, char **argv)
         return -1;
     }
 
+	if (deamonise) {
+		deamonise();
+	}
+	
     if (inputFileName.length() > 0) {
         outputImageName.assign(outputFileName);
         outputFileName.clear();
