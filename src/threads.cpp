@@ -2,6 +2,8 @@
 #include <string.h>
 
 #include "posixthread.h"
+#include "webadmin.h"
+#include "logger.h"
 #include "clk_error.h"
 #include "threads.h"
 
