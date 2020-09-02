@@ -400,6 +400,7 @@ int main(int argc, char **argv)
     string                      outputFileName;
     string                      keystreamFileName;
     string                      outputImageFormat;
+	int							listenPort;
     ImageFormat                 outputImageFmt = UnsupportedFormat;
 
     if (argc > 1) {
@@ -448,6 +449,9 @@ int main(int argc, char **argv)
                 else if (strncmp(arg, "-o", 2) == 0) {
                     outputFileName.assign(argv[i + 1]);
                 }
+				else if (strncmp(arg, "-p", 2) == 0) {
+					listenPort = atoi(argv[i + 1]);
+				}
                 else if (strncmp(arg, "-q", 2) == 0) {
                     int q = atoi(argv[i + 1]);
 
