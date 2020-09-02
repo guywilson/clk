@@ -26,6 +26,8 @@ extern "C" {
 #include "ImageStream.h"
 #include "image.h"
 #include "encrypt.h"
+#include "posixthread.h"
+#include "threads.h"
 #include "cloak.h"
 
 #include "../test/testsuite.h"
