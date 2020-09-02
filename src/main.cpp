@@ -483,6 +483,14 @@ int main(int argc, char **argv)
 
 	if (isDeamon) {
 		deamonise();
+		
+		ThreadMgr & threadMgr = ThreadMgr::getInstance();
+		
+		threadMgr.startThreads();
+		
+		while (1) {
+			PosixThread::sleep(PosixThread::seconds, 1);
+		}
 	}
 	
     if (inputFileName.length() > 0) {
