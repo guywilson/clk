@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <syslog.h>
 #include <unistd.h>
+#include <configmgr.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -26,7 +27,6 @@ extern "C" {
 #include "ImageStream.h"
 #include "image.h"
 #include "encrypt.h"
-#include "configmgr.h"
 #include "posixthread.h"
 #include "threads.h"
 #include "cloak.h"
