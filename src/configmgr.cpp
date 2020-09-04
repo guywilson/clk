@@ -218,6 +218,11 @@ int ConfigManager::getValueAsInteger(const char * key)
     return atoi(pszValue);
 }
 
+void ConfigManager::putValue(const char * key, const char * value)
+{
+	values[string(key)] = string(value);
+}
+
 void ConfigManager::dumpConfig()
 {
     readConfig();
