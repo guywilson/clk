@@ -13,7 +13,7 @@ extern "C" {
 #include <vector>
 
 #include "configmgr.h"
-#include "wctl_error.h"
+#include "clk_error.h"
 
 
 using namespace std;
@@ -50,7 +50,7 @@ void ConfigManager::readConfig()
 
 	if (fptr == NULL) {
 		syslog(LOG_ERR, "Failed to open config file %s with error %s", szConfigFileName, strerror(errno));
-		throw wctl_error(wctl_error::buildMsg("ERROR reading config file %s with error %s", szConfigFileName, strerror(errno)), __FILE__, __LINE__);
+		throw clk_error(clk_error::buildMsg("ERROR reading config file %s with error %s", szConfigFileName, strerror(errno)), __FILE__, __LINE__);
 	}
 
     fseek(fptr, 0L, SEEK_END);
@@ -61,7 +61,7 @@ void ConfigManager::readConfig()
 
 	if (config == NULL) {
 		syslog(LOG_ERR, "Failed to alocate %d bytes for config file %s", fileLength, szConfigFileName);
-		throw wctl_error(wctl_error::buildMsg("Failed to allocate %d bytes for config file %s", fileLength, szConfigFileName), __FILE__, __LINE__);
+		throw clk_error(clk_error::buildMsg("Failed to allocate %d bytes for config file %s", fileLength, szConfigFileName), __FILE__, __LINE__);
 	}
 
     /*
@@ -77,8 +77,8 @@ void ConfigManager::readConfig()
 
 	if (bytesRead != fileLength) {
 		syslog(LOG_ERR, "Read %d bytes, but config file %s is %d bytes long", bytesRead, szConfigFileName, fileLength);
-		throw wctl_error(
-            wctl_error::buildMsg(
+		throw clk_error(
+            clk_error::buildMsg(
                 "Failed to read config file, read %d bytes, but config file %s is %d bytes long", 
                 bytesRead, 
                 szConfigFileName, 
@@ -137,7 +137,7 @@ void ConfigManager::readConfig()
 
                         if (f == NULL) {
                             syslog(LOG_ERR, "Failed to open cfg item file %s with error %s", pszCfgItemFile, strerror(errno));
-                            throw wctl_error(wctl_error::buildMsg("ERROR reading config item file %s: %s", pszCfgItemFile, strerror(errno)), __FILE__, __LINE__);
+                            throw clk_error(clk_error::buildMsg("ERROR reading config item file %s: %s", pszCfgItemFile, strerror(errno)), __FILE__, __LINE__);
                         }
 
                         fseek(f, 0L, SEEK_END);
@@ -148,7 +148,7 @@ void ConfigManager::readConfig()
 
                         if (pszCfgItem == NULL) {
                             syslog(LOG_ERR, "Failed to alocate %ld bytes for config item %s", propFileLength + 1, pszKey);
-                            throw wctl_error(wctl_error::buildMsg("Failed to allocate %ld bytes for config item %s", propFileLength + 1, pszKey), __FILE__, __LINE__);
+                            throw clk_error(clk_error::buildMsg("Failed to allocate %ld bytes for config item %s", propFileLength + 1, pszKey), __FILE__, __LINE__);
                         }
 
                         fread(pszCfgItem, propFileLength, 1, f);
