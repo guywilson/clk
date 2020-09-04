@@ -26,6 +26,7 @@ extern "C" {
 #include "ImageStream.h"
 #include "image.h"
 #include "encrypt.h"
+#include "configmgr.h"
 #include "posixthread.h"
 #include "threads.h"
 #include "cloak.h"
@@ -402,7 +403,8 @@ int main(int argc, char **argv)
     string                      outputFileName;
     string                      keystreamFileName;
     string                      outputImageFormat;
-	int							listenPort;
+	string						listenPort;
+	string						webResourceDir;
     ImageFormat                 outputImageFmt = UnsupportedFormat;
 
     if (argc > 1) {
@@ -451,8 +453,11 @@ int main(int argc, char **argv)
                 else if (strncmp(arg, "-o", 2) == 0) {
                     outputFileName.assign(argv[i + 1]);
                 }
-				else if (strncmp(arg, "-p", 2) == 0) {
-					listenPort = atoi(argv[i + 1]);
+				else if (strncmp(arg, "-port", 5) == 0) {
+					listenPort.assign(argv[i + 1]);
+				}
+				else if (strncmp(arg, "-base-dir", 9) == 0) {
+					webResourceDir.assign(argv[i + 1]);
 				}
                 else if (strncmp(arg, "-q", 2) == 0) {
                     int q = atoi(argv[i + 1]);
@@ -489,6 +494,11 @@ int main(int argc, char **argv)
 
 	if (isDeamon) {
 		deamonise();
+		
+		ConfigManager & cfg = ConfigManager::getInstance();
+		
+		cfg.putValue("web.listenport", listenPort.c_str());
+		cfg.putValue("web.resourcedir", webResourceDir.c_str());
 		
 		ThreadMgr & threadMgr = ThreadMgr::getInstance();
 		

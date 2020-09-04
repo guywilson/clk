@@ -32,7 +32,9 @@ public:
     const char *            getValue(const char * key);
     bool                    getValueAsBoolean(const char * key);
     int                     getValueAsInteger(const char * key);
-
+	
+	void					putValue(const char * key, const char * value);
+	
     void                    dumpConfig();
 };
 
