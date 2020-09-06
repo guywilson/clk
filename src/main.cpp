@@ -496,6 +496,10 @@ int main(int argc, char **argv)
 		deamonise();
 		
 		ConfigManager & cfg = ConfigManager::getInstance();
+		cfg.initialise("./clk.cfg");
+		
+		Logger & log = Logger::getInstance();
+		log.initialise(cfg.getValue("log.logfilename"));
 		
 		cfg.putValue("web.listenport", listenPort.c_str());
 		cfg.putValue("web.resourcedir", webResourceDir.c_str());

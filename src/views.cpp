@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <logger.h>
+#include <mongoose.h>
+#include <html_template.h>
 
 extern "C" {
 #include <strutils.h>
@@ -11,9 +14,6 @@ extern "C" {
 #include "views.h"
 #include "webadmin.h"
 #include "clk_error.h"
-#include "logger.h"
-#include "mongoose.h"
-#include "html_template.h"
 
 extern "C" {
 #include "version.h"
