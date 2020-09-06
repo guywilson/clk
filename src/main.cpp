@@ -405,6 +405,7 @@ int main(int argc, char **argv)
     string                      outputImageFormat;
 	string						listenPort;
 	string						webResourceDir;
+	string						configFile;
     ImageFormat                 outputImageFmt = UnsupportedFormat;
 
     if (argc > 1) {
@@ -459,6 +460,9 @@ int main(int argc, char **argv)
 				else if (strncmp(arg, "-base-dir", 9) == 0) {
 					webResourceDir.assign(argv[i + 1]);
 				}
+				else if (strncmp(arg, "-cfg", 4) == 0) {
+					configFile.assign(argv[i + 1]);
+				}
                 else if (strncmp(arg, "-q", 2) == 0) {
                     int q = atoi(argv[i + 1]);
 
@@ -496,10 +500,10 @@ int main(int argc, char **argv)
 		deamonise();
 		
 		ConfigManager & cfg = ConfigManager::getInstance();
-		cfg.initialise("./clk.cfg");
+		cfg.initialise(configFile.c_str());
 		
 		Logger & log = Logger::getInstance();
-		log.initialise(cfg.getValue("log.logfilename"));
+		log.initLogger(cfg.getValue("log.logfilename"), cfg.getValue("log.legLevel"));
 		
 		cfg.putValue("web.listenport", listenPort.c_str());
 		cfg.putValue("web.resourcedir", webResourceDir.c_str());
