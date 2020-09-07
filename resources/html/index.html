@@ -2,98 +2,23 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Admin Console</title>
+		<title>Cloak</title>
 		<link rel="stylesheet" type="text/css" href="/css/style.css">
     </head>
     <body>
-      <h1 style="text-align: center">Admin Console</h1>
+      <h1 style="text-align: center">Load Image</h1>
       <p>&nbsp;
-      <div class="centred-outer">
-        <div class="centred-inner">
-        <p class="pretty-frame" style="line-height: 1.5">
-          <button class="btn" onclick="getHREF('home')">Home</button>
-          <button class="btn" onclick="getHREF('command')">Issue Command</button>
-          <button class="btn" onclick="getHREF('calibration')">Calibration</button>
-        </p>
-        </div>
-  
-        <script>
-          function getHREF(ref) {
-            if (ref == 'home') {
-              window.location.href = "/";
-            }
-            else if (ref == 'command') {
-              window.location.href = "/cmd/cmd.html";
-            }
-            else if (ref == 'calibration') {
-              window.location.href = "/calib/calibration.html";
-            }
-          }
-        </script>
-        </div>
-        <div class="container">
-          <table style="width: 80%; margin-left: auto; margin-right: auto">
-            <tr>
-              <td style="padding: 8px">
-                <table class="pretty-table">
-                  <tr>
-                    <td class="column-heading" style="text-align: left"><font size="4"><b>Weather Controller</b></font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3">v<tmpl_var wctl-version> date [<tmpl_var wctl-builddate>]</font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3"><b>Uptime</b></font></td>
-                    <td class="table-cell" style="text-align: right"><font size="3"><tmpl_var wctl-uptime></font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3"><b>Core temperature</b></font></td>
-                    <td class="table-cell" style="text-align: right"><font size="3"><tmpl_var wctl-coretemp></font></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px">
-                <table class="pretty-table">
-                  <tr>
-                    <td class="column-heading" style="text-align: left"><font size="4"><b>AVR</b></font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3">v<tmpl_var avr-version> date [<tmpl_var avr-builddate>]</font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3"><b>Uptime</b></font></td>
-                    <td class="table-cell" style="text-align: right"><font size="3"><tmpl_var avr-uptime></font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3"><b>Messages processed</b></font></td>
-                    <td class="table-cell" style="text-align: right"><font size="3"><tmpl_var avr-msgsprocessed></font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3"><b>CPU %</b></font></td>
-                    <td class="table-cell" style="text-align: right"><font size="3"><tmpl_var avr-cpupct></font></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px">
-                <table class="pretty-table">
-                  <tr>
-                    <td class="column-heading" style="text-align: left"><font size="4"><b>RTScheduler</b></font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3">v<tmpl_var rts-version> date [<tmpl_var rts-builddate>]</font></td>
-                  </tr>
-                  <tr>
-                    <td class="table-cell" style="text-align: left"><font size="3"><b>Tasks run</b></font></td>
-                    <td class="table-cell" style="text-align: right"><font size="3"><tmpl_var rts-tasksrun></font></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-        </div>
+      <div class="centred-outer">  
+		<p><input type="file"  accept="image/*" name="image" id="file"  onchange="loadFile(event)" style="display: none;"></p>
+		<p><label for="file" style="cursor: pointer;">Upload Image</label></p>
+		<p><img id="output" width="200" /></p>
+
+		<script>
+			var loadFile = function(event) {
+				var image = document.getElementById('output');
+				image.src = URL.createObjectURL(event.target.files[0]);
+			};
+		</script>
+		</div>
     </body>
 </html>
