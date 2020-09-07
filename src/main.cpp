@@ -91,7 +91,7 @@ void runTests()
     cout << endl << "Ran " << runCount << " tests, " << passCount << " passed, " << (runCount - passCount) << " failed." << endl;
 }
 
-void deamonise()
+void daemonise()
 {
 	pid_t			pid;
 	pid_t			sid;
@@ -393,7 +393,7 @@ int main(int argc, char **argv)
     CloakHelper::MergeQuality   quality = CloakHelper::High;
     bool                        isMerge = false;
     bool                        ignoreCRC = false;
-	bool						isDeamon = false;
+	bool						isDaemon = false;
     char *                      arg;
     uint8_t *                   key = NULL;
     uint32_t                    keyLength;
@@ -428,8 +428,8 @@ int main(int argc, char **argv)
                 else if (strncmp(arg, "--ignore-crc", 12) == 0) {
                     ignoreCRC = true;
                 }
-				else if (strncmp(arg, "--deamon", 8) == 0 || strncmp(arg, "-d", 2) == 0) {
-					isDeamon = true;
+				else if (strncmp(arg, "--daemon", 8) == 0 || strncmp(arg, "-d", 2) == 0) {
+					isDaemon = true;
 				}
                 else if (strncmp(arg, "-f", 2) == 0) {
                     inputFileName.assign(argv[i + 1]);
@@ -496,8 +496,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
-	if (isDeamon) {
-		deamonise();
+	if (isDaemon) {
+		daemonise();
 		
 		ConfigManager & cfg = ConfigManager::getInstance();
 		cfg.initialise(configFile.c_str());
