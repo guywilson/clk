@@ -329,8 +329,8 @@ ImageOutputStream::ImageOutputStream(char * filename) : ImageStream(filename)
 
 void ImageOutputStream::_writePNG(PNG * png)
 {
-	long			y;
-	long			x;
+	uint32_t		y;
+	uint32_t		x;
 	png_structp		png_ptr = NULL;
     png_infop		info_ptr = NULL;
 	uint8_t *		row = NULL;

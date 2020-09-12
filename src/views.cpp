@@ -82,7 +82,7 @@ void cmdHandler(struct mg_connection * connection, int event, void * p)
 	struct http_message *			message;
 	char *							pszMethod;
 	char *							pszURI;
-	char *							szCmdValue;
+	char 							szCmdValue[64];
 	const char *					pszRedirect = "/cmd/cmd.html";
 	int								rtn;
 
@@ -106,13 +106,13 @@ void cmdHandler(struct mg_connection * connection, int event, void * p)
 
 				log.logInfo("Got command: %s", szCmdValue);
 
-				if (strncmp(szCmdValue, "debug-logging-on", sizeof(szCmdValue)) == 0) {
+				if (strncmp(szCmdValue, "debug-logging-on", 16) == 0) {
 					int level = log.getLogLevel();
 					level |= (LOG_LEVEL_INFO | LOG_LEVEL_DEBUG);
 					log.setLogLevel(level);
 					pszRedirect = "/cmd/cmdon.html";
 				}
-				else if (strncmp(szCmdValue, "debug-logging-off", sizeof(szCmdValue)) == 0) {
+				else if (strncmp(szCmdValue, "debug-logging-off", 17) == 0) {
 					int level = log.getLogLevel();
 					level &= ~(LOG_LEVEL_INFO | LOG_LEVEL_DEBUG);
 					log.setLogLevel(level);

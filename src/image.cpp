@@ -115,7 +115,7 @@ void RGB24BitImage::transformImageData(uint8_t * srcData, uint32_t srcDataLength
 {
 	long		i;
 	long		x;
-	long		y;
+	uint32_t	y;
 	long		rowBytes;
 	uint8_t *	sourceRow;
 	uint8_t *	targetRow;

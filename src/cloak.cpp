@@ -37,7 +37,9 @@ RGB24BitImage * CloakHelper::merge(RGB24BitImage * srcImage, DataFile * srcDataF
     uint8_t             mask;
     uint8_t             dataBits;
     uint32_t            i;
-    int                 pos, bitCounter, numLengthBytes, numDataBytes;
+    uint32_t			numLengthBytes;
+    uint32_t			numDataBytes;
+    int                 pos, bitCounter;
 
     srcImageData = srcImage->getImageData();
     srcImageDataLength = srcImage->getDataLength();
@@ -167,7 +169,10 @@ DataFile * CloakHelper::extract(RGB24BitImage * srcImage, clk_info_struct * info
     uint8_t                 xorKey[128 / 8];
     uint8_t                 targetBits;
     uint8_t                 targetByte;
-    int                     i, bitCounter, pos, numLengthBytes, numDataBytes;
+    uint32_t            	i;
+    uint32_t				numLengthBytes;
+    uint32_t				numDataBytes;
+    int						bitCounter, pos;
 
     srcImageData = srcImage->getImageData();
     srcImageDataLength = srcImage->getDataLength();
