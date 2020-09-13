@@ -457,6 +457,7 @@ int main(int argc, char **argv)
                 }
 				else if (strncmp(arg, "-cfg", 4) == 0) {
 					configFile.assign(argv[i + 1]);
+					cout << "Configured with file " << configFile << endl;
 				}
                 else if (strncmp(arg, "-q", 2) == 0) {
                     int q = atoi(argv[i + 1]);
