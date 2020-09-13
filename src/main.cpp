@@ -498,7 +498,7 @@ int main(int argc, char **argv)
 		cfg.initialise(configFile.c_str());
 		
 		Logger & log = Logger::getInstance();
-		log.initLogger(cfg.getValue("log.logfilename"), cfg.getValue("log.legLevel"));
+		log.initLogger(cfg.getValue("log.logfilename"), cfg.getValue("log.leglevel"));
 		
 		log.logDebug("In daemon mode...");
 		
