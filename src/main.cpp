@@ -500,6 +500,8 @@ int main(int argc, char **argv)
 		Logger & log = Logger::getInstance();
 		log.initLogger(cfg.getValue("log.logfilename"), cfg.getValue("log.legLevel"));
 		
+		log.logDebug("In daemon mode...");
+		
 		ThreadMgr & threadMgr = ThreadMgr::getInstance();
 		
 		threadMgr.startThreads();
