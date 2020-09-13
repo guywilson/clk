@@ -3,15 +3,16 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <configmgr.h>
+#include <logger.h>
 #include <curl/curl.h>
+
+extern "C" {
+#include <mongoose.h>
+}
 
 #include "clk_error.h"
 #include "webadmin.h"
-#include "logger.h"
-
-extern "C" {
-#include "mongoose.h"
-}
 
 #define INT_LENGTH				10
 
@@ -78,10 +79,11 @@ void WebAdmin::initListener()
 	struct mg_bind_opts opts;
 
 	Logger & log = Logger::getInstance();
+	ConfigManager & cfg = ConfigManager::getInstance();
 	
 	memset(&opts, 0, sizeof(mg_bind_opts));
 
-	strcpy(szPort, "3000");
+	strcpy(szPort, cfg.getValue("web.listenport"));
 
 	mg_mgr_init(&mgr, NULL);
 

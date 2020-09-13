@@ -5,6 +5,7 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <configmgr.h>
+#include <logger.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -454,12 +455,6 @@ int main(int argc, char **argv)
                 else if (strncmp(arg, "-o", 2) == 0) {
                     outputFileName.assign(argv[i + 1]);
                 }
-				else if (strncmp(arg, "-port", 5) == 0) {
-					listenPort.assign(argv[i + 1]);
-				}
-				else if (strncmp(arg, "-base-dir", 9) == 0) {
-					webResourceDir.assign(argv[i + 1]);
-				}
 				else if (strncmp(arg, "-cfg", 4) == 0) {
 					configFile.assign(argv[i + 1]);
 				}
@@ -504,9 +499,6 @@ int main(int argc, char **argv)
 		
 		Logger & log = Logger::getInstance();
 		log.initLogger(cfg.getValue("log.logfilename"), cfg.getValue("log.legLevel"));
-		
-		cfg.putValue("web.listenport", listenPort.c_str());
-		cfg.putValue("web.resourcedir", webResourceDir.c_str());
 		
 		ThreadMgr & threadMgr = ThreadMgr::getInstance();
 		
