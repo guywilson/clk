@@ -7,8 +7,8 @@
 ###############################################################################
 
 # Version number for WCTL
-MAJOR_VERSION = 1
-MINOR_VERSION = 3
+MAJOR_VERSION = 2
+MINOR_VERSION = 0
 
 # Directories
 SOURCE = src
@@ -32,17 +32,17 @@ PRECOMPILE = @ mkdir -p $(BUILD) $(DEP)
 # postcompile step
 POSTCOMPILE = @ mv -f $(DEP)/$*.Td $(DEP)/$*.d
 
-CPPFLAGS = -c -O2 -Wall -pedantic -fPIC -std=c++11
-CFLAGS = -c -O2 -Wall -pedantic -fPIC
+CPPFLAGS = -c -O2 -Wall -pedantic -fPIC -std=c++11 -I/opt/homebrew/include
+CFLAGS = -c -O2 -Wall -pedantic -fPIC -I/opt/homebrew/include
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP)/$*.Td
 
 # Libraries
 STDLIBS = -lstdc++
-EXTLIBS = -lgcrypt -lpng
+EXTLIBS = -lgcrypt -lpng -lz
 
 COMPILE.cpp = $(CPP) $(CPPFLAGS) $(DEPFLAGS) $(MGFLAGS) -o $@
 COMPILE.c = $(C) $(CFLAGS) $(DEPFLAGS) $(MGFLAGS) -o $@
-LINK.o = $(LINKER) $(STDLIBS) -o $@
+LINK.o = $(LINKER) $(STDLIBS) -L/opt/homebrew/Cellar/libgcrypt/1.9.3/lib -L/opt/homebrew/Cellar/zlib/1.2.11/lib -L/opt/homebrew/lib -o $@
 
 CSRCFILES = $(wildcard $(SOURCE)/*.c)
 CPPSRCFILES = $(wildcard $(SOURCE)/*.cpp)
@@ -64,7 +64,7 @@ $(TARGET): $(OBJFILES) $(BUILD)/main.o $(TSTOBJFILES)
 	$(LINK.o) $^ $(EXTLIBS)
 
 $(LIBTARGET): $(OBJFILES)
-	$(LINKER) -shared -o $(LIB)/$(LIBTARGET) $^ $(EXTLIBS)
+	$(LINKER) -shared -L/opt/homebrew/Cellar/libgcrypt/1.9.3/lib -L/opt/homebrew/lib -o $(LIB)/$(LIBTARGET) $^ $(EXTLIBS)
 
 $(BUILD)/%.o: $(SOURCE)/%.c
 $(BUILD)/%.o: $(SOURCE)/%.c $(DEP)/%.d

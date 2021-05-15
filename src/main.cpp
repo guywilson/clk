@@ -180,7 +180,7 @@ void hide(
         RGB24BitImage * inputImage = is.read();
         is.close();
 
-        FileInputStream fis(inputFileName);
+        FileZippedInputStream fis(inputFileName);
 
         fis.open();
         DataFile * inputFile = fis.read();
@@ -316,7 +316,7 @@ void reveal(
             }
         }
 
-        FileOutputStream fos(outputFileName);
+        FileZippedOutputStream fos(outputFileName);
 
         fos.open();
         fos.write(outputFile);

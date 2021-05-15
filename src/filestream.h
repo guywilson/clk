@@ -53,11 +53,47 @@ class FileInputStream : public FileStream
         DataFile *      read();
 };
 
+/*
+** This class reads in data and compresses it into the DataFile returned
+** from the read() method
+*/
+class FileZippedInputStream : public FileInputStream
+{
+    private:
+        const uint32_t  blockSize = 8192;
+        
+    public:
+        FileZippedInputStream(string & filename) : FileInputStream(filename) {}
+        FileZippedInputStream(const char * filename) : FileInputStream(filename) {}
+
+        virtual void    open();
+
+        DataFile *      read();
+};
+
 class FileOutputStream : public FileStream
 {
     public:
         FileOutputStream(string & filename) : FileStream(filename) {}
         FileOutputStream(const char * filename) : FileStream(filename) {}
+
+        virtual void    open();
+
+        void            write(DataFile * df);
+};
+
+/*
+** This class writes out uncompressed data, i.e. the DataFile parameter
+** to the write() method must be compressed data from a FileZippedInputStream
+*/
+class FileZippedOutputStream : public FileOutputStream
+{
+    private:
+        const uint32_t  blockSize = 8192;
+        
+    public:
+        FileZippedOutputStream(string & filename) : FileOutputStream(filename) {}
+        FileZippedOutputStream(const char * filename) : FileOutputStream(filename) {}
 
         virtual void    open();
 
