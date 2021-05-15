@@ -31,7 +31,7 @@ https://www.random.org/
 
 Building Clk
 --------------
-Clk is written in C++ and I have provided a makefile for Unix/Linux using the gcc compiler (tested on Mac OS). Clk depends on the 3rd party libraries libpng and libgcrypt (for the encryption and hashing algorithms, part of GPG).
+Clk is written in C++ and I have provided a makefile for Unix/Linux using the gcc compiler (tested on Mac OS). Clk depends on the 3rd party libraries libpng, libgcrypt (for the encryption and hashing algorithms, part of GPG) and libz (for deflate/inflate).
 
 Build clk using the system make utility, e.g. on Linux/macOs
 
@@ -56,10 +56,6 @@ To 'uncloak' the file from flowers_out.png, you can use the following command:
     clk -o LICENSE.out -q 1 flowers_out.png
     
 This tells Cloak to use extract mode to extract the file 'LICENSE.out' from the input image 'flowers_out.png', again using 1-bit per byte.
-
-Node module
------------
-Clk also has a node add-on module - cloak.node built using node-gyp, the source for the interface is in node_export.cpp and is on npmjs.com as the package file-cloak https://www.npmjs.com/package/file-cloak.
 
 Tips
 ----
