@@ -510,7 +510,7 @@ int main(int argc, char **argv)
                 alg,
                 key, 
                 keyLength,
-                6);
+                level);
         }
         else {
             reveal(
