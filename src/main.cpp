@@ -25,6 +25,8 @@ extern "C" {
 
 #include "../test/testsuite.h"
 
+#define DEFAULT_ZIP_LEVEL               5
+
 using namespace std;
 
 void printUsage()
@@ -38,7 +40,8 @@ void printUsage()
     cout << "             -of [output image format] BMP or PNG" << endl;
     cout << "             -f [file to cloak]" << endl;
     cout << "             -k [keystream file for one-time pad encryption]" << endl;
-    cout << "             -q [merge quality] either 1, 2, or 4 bits per byte" << endl << endl;
+    cout << "             -q [merge quality] either 1, 2, or 4 bits per byte" << endl;
+    cout << "             -z [zip level] 0 to 9, 0 = no compression, (defaults to 5) to deflate file to cloak" << endl << endl;
 	cout.flush();
 }
 
@@ -163,7 +166,8 @@ void hide(
         ImageFormat outputImageFormat, 
         EncryptionHelper::Algorithm algo,
         uint8_t * key,
-        uint32_t keyLength)
+        uint32_t keyLength,
+        int zipLevel)
 {
     EncryptionHelper    encryptionHelper;
     CloakHelper         cloakHelper;
@@ -180,11 +184,18 @@ void hide(
         RGB24BitImage * inputImage = is.read();
         is.close();
 
-        FileZippedInputStream fis(inputFileName);
+        DataFile * inputFile = nullptr;
 
-        fis.open();
-        DataFile * inputFile = fis.read();
-        fis.close();
+        if (zipLevel >= 0 && zipLevel <= 9) {
+            FileZippedInputStream fis(inputFileName);
+
+            fis.open();
+            inputFile = fis.read(zipLevel);
+            fis.close();
+        }
+        else {
+            throw clk_error("Invalid zip level supplied", __FILE__, __LINE__);
+        }
 
         /*
         ** Calculate the CRC32 for the data...
@@ -335,6 +346,7 @@ void reveal(
 int main(int argc, char **argv)
 {
     int                         i;
+    int                         level = DEFAULT_ZIP_LEVEL;
     CloakHelper::MergeQuality   quality = CloakHelper::High;
     bool                        isMerge = false;
     bool                        ignoreCRC = false;
@@ -412,6 +424,9 @@ int main(int argc, char **argv)
                             cout << "Invaliid quality supplied, valid quality values are 1, 2, or 4 bits..." << endl << endl;
                             return -1;
                     }
+                }
+                else if (strncmp(arg, "-z", 2) == 0) {
+                    level = atoi(argv[i + 1]);
                 }
                 else {
                     cout << "Invalid option (" << arg << ") - clk --help for help" << endl << endl;
@@ -494,7 +509,8 @@ int main(int argc, char **argv)
                 outputImageFmt, 
                 alg,
                 key, 
-                keyLength);
+                keyLength,
+                6);
         }
         else {
             reveal(

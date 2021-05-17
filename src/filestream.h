@@ -68,7 +68,7 @@ class FileZippedInputStream : public FileInputStream
 
         virtual void    open();
 
-        DataFile *      read();
+        DataFile *      read(int level);
 };
 
 class FileOutputStream : public FileStream

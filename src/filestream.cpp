@@ -67,7 +67,7 @@ void FileZippedInputStream::open()
     FileInputStream::open();
 }
 
-DataFile * FileZippedInputStream::read()
+DataFile * FileZippedInputStream::read(int level)
 {
     DataFile *      df;
     uint32_t        fileLength;
@@ -76,7 +76,6 @@ DataFile * FileZippedInputStream::read()
     uint32_t        bytesDeflated;
     uint32_t        totalBytes = 0;
     z_stream        zipStream;
-    int             level = 6;
     int             flush;
     int             zrtn;
 
