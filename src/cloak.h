@@ -1,8 +1,6 @@
 #include <string>
 #include <stdint.h>
 
-using namespace std;
-
 #ifndef __INCL_CLOAK
 #define __INCL_CLOAK
 

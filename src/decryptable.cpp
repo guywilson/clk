@@ -9,8 +9,6 @@
 #include "decryptable.h"
 #include "clk_error.h"
 
-using namespace std;
-
 void AESDecryptableFile::decryptBlock(uint8_t * buffer, size_t bufferLength) {
     algorithm->decryptBlock(buffer, getBlockSize(), key, keyLength);
 }

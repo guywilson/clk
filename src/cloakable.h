@@ -12,8 +12,6 @@
 
 #include "random_block.h"
 
-using namespace std;
-
 #ifndef __INCL_CLOAKABLE_FILE
 #define __INCL_CLOAKABLE_FILE
 
@@ -128,7 +126,7 @@ class CloakableInputFile : public CloakableFile {
         }
 
     public:
-        void open(const string & filename) override;
+        void open(const std::string & filename) override;
 
         size_t read(uint8_t * buffer, size_t bufferLength) {
             size_t bytesRead = 0;
@@ -190,7 +188,7 @@ class CloakableOutputFile : public CloakableFile {
         virtual void extractAdditionalInitialisationBlock(uint8_t * initialisationBlockBuffer) {}
 
     public:
-        void open(const string & filename) override;
+        void open(const std::string & filename) override;
 
         virtual size_t writeBlock(uint8_t * buffer, size_t bytesToWrite);
 

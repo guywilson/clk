@@ -11,8 +11,6 @@
 #include "cloak.h"
 #include "xdump.h"
 
-using namespace std;
-
 void PNGHost::addBlock(HostFileReader * reader, uint8_t * sourceBlock, size_t sourceBlockSize) {
     size_t numImageBytesRequired = CloakAlgorithm::calculateBlockHostBytesRequired(sourceBlockSize, security);
 

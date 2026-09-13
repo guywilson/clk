@@ -11,8 +11,6 @@
 
 #include "random_block.h"
 
-using namespace std;
-
 #ifndef __INCL_ENCRYPTABLE
 #define __INCL_ENCRYPTABLE
 

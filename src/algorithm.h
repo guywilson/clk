@@ -3,8 +3,6 @@
 
 #include <gcrypt.h>
 
-using namespace std;
-
 #ifndef __INCL_ALGORITHM
 #define __INCL_ALGORITHM
 

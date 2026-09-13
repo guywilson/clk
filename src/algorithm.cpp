@@ -6,8 +6,6 @@
 #include "clk_error.h"
 #include "algorithm.h"
 
-using namespace std;
-
 void AESEncryptionAlgorithm::open() {
     gcry_error_t error = 
             gcry_cipher_open(

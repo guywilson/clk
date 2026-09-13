@@ -6,15 +6,13 @@
 
 #include "clk_error.h"
 
-using namespace std;
-
 #ifndef __INCL_CMDARG
 #define __INCL_CMDARG
 
 class CmdArg {
     private:
         int argPointer;
-        vector<string> args;
+        std::vector<std::string> args;
 
     public:
         CmdArg(int argc, char ** argv) {
@@ -41,7 +39,7 @@ class CmdArg {
             return (argPointer >= (getNumArgs() - 1));
         }
 
-        inline string nextArg() {
+        inline std::string nextArg() {
             if (argPointer >= getNumArgs()) {
                 throw clk_error("Command index overrun");
             }
@@ -49,7 +47,7 @@ class CmdArg {
             return args[argPointer++];
         }
 
-        inline string getArg(int i) {
+        inline std::string getArg(int i) {
             if (i >= getNumArgs()) {
                 throw clk_error("Command index overrun");
             }
@@ -58,10 +56,10 @@ class CmdArg {
         }
 
         inline void dumpArgs() {
-            cout << "Num args captured: " << getNumArgs() << endl;
+            std::cout << "Num args captured: " << getNumArgs() << std::endl;
             for (int i = 0;i < getNumArgs();i++) {
-                string arg = args[i];
-                cout << "Arg " << i << " = '" << arg << "'" << endl;
+                std::string arg = args[i];
+                std::cout << "Arg " << i << " = '" << arg << "'" << std::endl;
             }
         }
 };

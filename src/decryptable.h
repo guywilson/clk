@@ -9,8 +9,6 @@
 #include "xdump.h"
 #include "clk_error.h"
 
-using namespace std;
-
 #ifndef __INCL_DECRYPTABLE
 #define __INCL_DECRYPTABLE
 

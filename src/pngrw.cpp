@@ -7,8 +7,6 @@
 #include "hostfile.h"
 #include "pngrw.h"
 
-using namespace std;
-
 static void _readwrite_error_handler(png_structp png_ptr, png_const_charp msg) {
     png_details_t * imageDetails = (png_details_t *)png_ptr;
     

@@ -6,8 +6,6 @@
 #include "clk_error.h"
 #include "hostfile.h"
 
-using namespace std;
-
 
 void HostFileReader::calculateFileLength() {
     log.entry("HostFileReader::calculateFileLength()");
@@ -24,7 +22,7 @@ void HostFileReader::calculateFileLength() {
     log.exit("HostFileReader::calculateFileLength()");
 }
 
-void HostFileReader::open(const string & filename) {
+void HostFileReader::open(const std::string & filename) {
     log.entry("HostFileReader::open()");
 
     fptr = fopen(filename.c_str(), "rb");
@@ -45,7 +43,7 @@ void HostFileReader::open(const string & filename) {
     log.exit("HostFileReader::open()");
 }
 
-void HostFileWriter::open(const string & filename) {
+void HostFileWriter::open(const std::string & filename) {
     log.entry("HostFileWriter::open()");
 
     fptr = fopen(filename.c_str(), "wb");

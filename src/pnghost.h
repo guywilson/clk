@@ -4,8 +4,6 @@
 
 #include "image.h"
 
-using namespace std;
-
 #ifndef __INCL_PNG_HOST
 #define __INCL_PNG_HOST
 

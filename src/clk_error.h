@@ -4,17 +4,15 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-using namespace std;
-
 #ifndef __CLK_ERROR
 #define __CLK_ERROR
 
 #define MESSAGE_BUFFER_LEN                  4096
 
-class clk_error : public exception
+class clk_error : public std::exception
 {
     private:
-        string          message;
+        std::string          message;
 
     public:
         const char * getTitle() {

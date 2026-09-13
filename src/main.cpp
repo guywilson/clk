@@ -25,9 +25,7 @@
 #define OPERATION_MERGE                 "merge"
 #define OPERATION_EXTRACT               "extract"
 
-using namespace std;
-
-static CloakSecurity getSecurityLevelArg(const string & arg) {
+static CloakSecurity getSecurityLevelArg(const std::string & arg) {
     CloakSecurity security;
 
     if (arg == "high" || arg == "hi") {
@@ -52,7 +50,7 @@ static CloakSecurity getSecurityLevelArg(const string & arg) {
     return security;
 }
 
-static AlgorithmType getAlgorithmArg(const string & arg) {
+static AlgorithmType getAlgorithmArg(const std::string & arg) {
     AlgorithmType algorithm;
 
     if (arg == "aes" || arg == "aes256") {
@@ -75,28 +73,28 @@ static AlgorithmType getAlgorithmArg(const string & arg) {
 }
 
 static void printUsage() {
-    cout << "Usage: clk [merge|extract] [options] file" << endl;
-    cout << "Hide or extract, an optionally encrypted file in/from the specifed bitmap based host file" << endl;
-    cout << "options:" << endl;
-    cout << "    -h | -host [host file] - currently supports 24-bit PNG images only" << endl;
-    cout << "    -algo [encryption algorithm] (aes|xor|none)" << endl;
-    cout << "    -sl | -security-level [level] (high|medium|low)" << endl;
-    cout << "    -k | -key [keyfile] for XOR encryption use the keyfile as the key" << endl;
-    cout << "    -g | -generate [keyfile] for XOR encryption, generate and use the keyfile as the key" << endl;
-    cout << "    -c | --capacity report the capacity of the host file and exit" << endl;
-    cout << "    -? | --help show this help and exit" << endl;
-    cout << "    -v | --version print version information and exit" << endl;
-    cout << endl;
+    std::cout << "Usage: clk [merge|extract] [options] file" << std::endl;
+    std::cout << "Hide or extract, an optionally encrypted file in/from the specifed bitmap based host file" << std::endl;
+    std::cout << "options:" << std::endl;
+    std::cout << "    -h | -host [host file] - currently supports 24-bit PNG images only" << std::endl;
+    std::cout << "    -algo [encryption algorithm] (aes|xor|none)" << std::endl;
+    std::cout << "    -sl | -security-level [level] (high|medium|low)" << std::endl;
+    std::cout << "    -k | -key [keyfile] for XOR encryption use the keyfile as the key" << std::endl;
+    std::cout << "    -g | -generate [keyfile] for XOR encryption, generate and use the keyfile as the key" << std::endl;
+    std::cout << "    -c | --capacity report the capacity of the host file and exit" << std::endl;
+    std::cout << "    -? | --help show this help and exit" << std::endl;
+    std::cout << "    -v | --version print version information and exit" << std::endl;
+    std::cout << std::endl;
 }
 
 int main(int argc, char ** argv) {
     int defaultLogLevel = LOG_LEVEL_FATAL | LOG_LEVEL_ERROR;
-    string algo;
-    string securityLevel;
-    string operation;
-    string hostFilename;
-    string dataFilename;
-    string keyFilename;
+    std::string algo;
+    std::string securityLevel;
+    std::string operation;
+    std::string hostFilename;
+    std::string dataFilename;
+    std::string keyFilename;
     bool generateKey = false;
     bool reportCapacity = false;
 
@@ -108,7 +106,7 @@ int main(int argc, char ** argv) {
     }
 
     while (cmdArg.hasMoreArgs()) {
-        string arg = cmdArg.nextArg();
+        std::string arg = cmdArg.nextArg();
 
         if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
             operation = arg;
@@ -137,7 +135,7 @@ int main(int argc, char ** argv) {
             return 0;
         }
         else if (arg == "--version" || arg == "-v") {
-            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
+            std::cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << std::endl << std::endl;
             return 0;
         }
         else if (cmdArg.isLastArg()) {
@@ -145,7 +143,7 @@ int main(int argc, char ** argv) {
             break;
         }
         else {
-            cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
+            std::cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << std::endl << std::endl;
             printUsage();
             return -1;
         }
@@ -161,11 +159,11 @@ int main(int argc, char ** argv) {
         size_t hostCapacity = reader->getCapacity(CLOAKED_LENGTH_BLOCK_SIZE, getSecurityLevelArg(securityLevel));
         
         if (reportCapacity) {
-            cout << 
+            std::cout <<
                 "Host file max capacity at the selected security level is " << 
-                to_string(hostCapacity) << 
+                std::to_string(hostCapacity) <<
                 " bytes." << 
-                endl;
+                std::endl;
 
             reader->close();
             delete reader;
@@ -213,7 +211,7 @@ int main(int argc, char ** argv) {
             host.addBlock(reader, initBuffer, initBufferSize);
 
             if (algorithm != AlgorithmType::no_encryption) {
-                pair<uint8_t *, size_t> keyPair = getKey(algorithm, generateKey, keyFilename, file->size());
+                std::pair<uint8_t *, size_t> keyPair = getKey(algorithm, generateKey, keyFilename, file->size());
                 file->setKey(keyPair.first, keyPair.second);
             }
 
@@ -235,7 +233,7 @@ int main(int argc, char ** argv) {
             writer.open(hostFilename);
             writer.close();
 
-            cout << "Hid '" << dataFilename << "' within host file '" << hostFilename << "'!"<< endl;
+            std::cout << "Hid '" << dataFilename << "' within host file '" << hostFilename << "'!"<< std::endl;
         }
         else if (operation == OPERATION_EXTRACT) {
             auto file = CloakableFileFactory::createOutputFile(dataFilename, algorithm);
@@ -248,7 +246,7 @@ int main(int argc, char ** argv) {
             file->extractInitialisationBlockFromBuffer(initBuffer);
 
             if (algorithm != AlgorithmType::no_encryption) {
-                pair<uint8_t *, size_t> keyPair = getKey(algorithm, generateKey, keyFilename, file->size());
+                std::pair<uint8_t *, size_t> keyPair = getKey(algorithm, generateKey, keyFilename, file->size());
                 file->setKey(keyPair.first, keyPair.second);
             }
 
@@ -263,7 +261,7 @@ int main(int argc, char ** argv) {
             file->close();
             reader->close();
 
-            cout << "Extracted '" << dataFilename << "' from host file '" << hostFilename << "'!"<< endl;
+            std::cout << "Extracted '" << dataFilename << "' from host file '" << hostFilename << "'!"<< std::endl;
         }
         else {
             reader->close();
@@ -278,7 +276,7 @@ int main(int argc, char ** argv) {
         delete reader;
     }
     catch (clk_error & e) {
-        cout << "ERROR: caught exception: " << e.what() << endl << endl;
+        std::cout << "ERROR: caught exception: " << e.what() << std::endl << std::endl;
     }
 
     log.close();

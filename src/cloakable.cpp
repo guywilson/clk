@@ -9,8 +9,6 @@
 #include "logger.h"
 #include "clk_error.h"
 
-using namespace std;
-
 void CloakableInputFile::calculateFileLength() {
     log.entry("CloakableInputFile::calculateFileLength()");
 
@@ -26,7 +24,7 @@ void CloakableInputFile::calculateFileLength() {
     log.exit("CloakableInputFile::calculateFileLength()");
 }
 
-void CloakableInputFile::open(const string & filename) {
+void CloakableInputFile::open(const std::string & filename) {
     log.entry("CloakableInputFile::open()");
 
     fptr = fopen(filename.c_str(), "rb");
@@ -79,7 +77,7 @@ size_t CloakableInputFile::readBlock(uint8_t * buffer, size_t bytesToRead) {
 }
 
 
-void CloakableOutputFile::open(const string & filename) {
+void CloakableOutputFile::open(const std::string & filename) {
     log.entry("CloakableOutputFile::open()");
 
     fptr = fopen(filename.c_str(), "wb");

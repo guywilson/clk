@@ -11,8 +11,6 @@
 #include "strdate.h"
 #include "logger.h"
 
-using namespace std;
-
 char * Logger::trim(const char * src) {
     if (src == NULL) {
         return NULL;
@@ -45,7 +43,7 @@ char * Logger::trim(const char * src) {
     return trimmedString;
 }
 
-void Logger::init(const string & filename, int logLevel) {
+void Logger::init(const std::string & filename, int logLevel) {
     this->loggingLevel = logLevel;
 
     if (filename.length() > 0) {
@@ -88,7 +86,7 @@ bool Logger::isLogLevel(int logLevel) {
     return ((this->loggingLevel & logLevel) == logLevel ? true : false);
 }
 
-int Logger::getLogLevelFromString(const string & logLevel) {
+int Logger::getLogLevelFromString(const std::string & logLevel) {
     int             level = 0;
 
     char * pszLogLevel = strdup(logLevel.c_str());
@@ -130,7 +128,7 @@ int Logger::logMessage(int logLevel, const char * fmt, va_list args) {
     int         bytesWritten = 0;
 
     if (this->loggingLevel & logLevel) {
-        string buffer = "[" + StrDate::getTimestampToMicrosecond() + "] ";
+        std::string buffer = "[" + StrDate::getTimestampToMicrosecond() + "] ";
 
         switch (logLevel) {
             case LOG_LEVEL_DEBUG:

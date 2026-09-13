@@ -9,8 +9,6 @@
 #include "encryptable.h"
 #include "clk_error.h"
 
-using namespace std;
-
 void AESEncryptableFile::encryptBlock(uint8_t * buffer, size_t bufferLength) {
     algorithm->encryptBlock(buffer, getBlockSize(), key, keyLength);
 }

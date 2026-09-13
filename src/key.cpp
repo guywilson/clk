@@ -17,8 +17,6 @@
 
 #define MAX_PASSWORD_LENGTH             256
 
-using namespace std;
-
 static int __getch(void) {
 	int		ch;
 
@@ -46,7 +44,7 @@ static int __getch(void) {
     return ch;
 }
 
-static pair<uint8_t *, size_t> getKeyFromUser() {
+static std::pair<uint8_t *, size_t> getKeyFromUser() {
     size_t keyBufferLength = (size_t)gcry_md_get_algo_dlen(GCRY_MD_SHA3_256);
 
     uint8_t * keyBuffer = (uint8_t *)malloc(keyBufferLength);
@@ -60,11 +58,11 @@ static pair<uint8_t *, size_t> getKeyFromUser() {
                 __LINE__);
     }
 
-    string password;
+    std::string password;
 	int i = 0;
     int ch = 0;
 
-    cout << "Enter password: ";
+    std::cout << "Enter password: ";
 
     while (ch != '\n') {
         ch = __getch();
@@ -90,12 +88,12 @@ static pair<uint8_t *, size_t> getKeyFromUser() {
 	gcry_md_hash_buffer(GCRY_MD_SHA3_256, keyBuffer, password.c_str(), password.length());
     password.clear();
 
-    pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
+    std::pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
 
     return key;
 }
 
-static pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
+static std::pair<uint8_t *, size_t> getKeyFromFile(const std::string & keyFilename) {
     CloakableInputFile keyFile;
     keyFile.open(keyFilename);
 
@@ -118,12 +116,12 @@ static pair<uint8_t *, size_t> getKeyFromFile(const string & keyFilename) {
 
     keyFile.close();
 
-    pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
+    std::pair<uint8_t *, size_t> key = {keyBuffer, keyBufferLength};
 
     return key;
 }
 
-static pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t keyLength) {
+static std::pair<uint8_t *, size_t> generateOTP(const std::string & keyFilename, size_t keyLength) {
     uint8_t * keyBuffer = (uint8_t *)malloc(keyLength);
 
     if (keyBuffer == NULL) {
@@ -152,7 +150,7 @@ static pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t ke
                 __LINE__);
     }
 
-    cout << "Wrote " << to_string(keyLength) << " random bytes to '" << keyFilename << "'" << endl << endl;
+    std::cout << "Wrote " << std::to_string(keyLength) << " random bytes to '" << keyFilename << "'" << std::endl << std::endl;
 
     fread(keyBuffer, sizeof(uint8_t), keyLength, fptrRand);
     fwrite(keyBuffer, sizeof(uint8_t), keyLength, fptrOutput);
@@ -160,13 +158,13 @@ static pair<uint8_t *, size_t> generateOTP(const string & keyFilename, size_t ke
     fclose(fptrRand);
     fclose(fptrOutput);
 
-    pair<uint8_t *, size_t> key = {keyBuffer, keyLength};
+    std::pair<uint8_t *, size_t> key = {keyBuffer, keyLength};
 
     return key;
 }
 
-pair<uint8_t *, size_t> getKey(AlgorithmType & algorithm, bool generateKey, const string & keyFilename, size_t keyLength) {
-    pair<uint8_t *, size_t> keyPair;
+std::pair<uint8_t *, size_t> getKey(AlgorithmType & algorithm, bool generateKey, const std::string & keyFilename, size_t keyLength) {
+    std::pair<uint8_t *, size_t> keyPair;
 
     if (!generateKey) {
         if (algorithm == AlgorithmType::aes_encryption) {

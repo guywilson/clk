@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 
-using namespace std;
-
 #ifndef __INCL_BINARY_FILE
 #define __INCL_BINARY_FILE
 
@@ -12,11 +10,11 @@ class BinaryFile {
         uint8_t * data;
         FILE * fptr;
 
-        string fileName;
+        std::string fileName;
         size_t fileLength;
 
     public:
-        virtual void open(const string & filename) = 0;
+        virtual void open(const std::string & filename) = 0;
         virtual void close() {
             if (fptr) {
                 fclose(fptr);

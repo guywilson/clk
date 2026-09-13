@@ -4,8 +4,6 @@
 
 #include "hostfile.h"
 
-using namespace std;
-
 #ifndef __INCL_PNG_RW
 #define __INCL_PNG_RW
 

@@ -5,8 +5,6 @@
 #include "binary.h"
 #include "cloak.h"
 
-using namespace std;
-
 #ifndef __INCL_HOSTFILE
 #define __INCL_HOSTFILE
 
@@ -27,7 +25,7 @@ class HostFileReader : public BinaryFile {
 
         virtual size_t getCapacity(size_t headerSize, const CloakSecurity & securityLevel) = 0;
 
-        virtual void open(const string & filename) override;
+        virtual void open(const std::string & filename) override;
         virtual void close() override {
             onClose();
             BinaryFile::close();
@@ -49,7 +47,7 @@ class HostFileWriter : public BinaryFile {
             close();
         }
 
-        virtual void open(const string & filename) override;
+        virtual void open(const std::string & filename) override;
         virtual void close() override {
             onClose();
             BinaryFile::close();

@@ -6,8 +6,6 @@
 
 #include "logger.h"
 
-using namespace std;
-
 #ifndef __INCL_STRDATE
 #define __INCL_STRDATE
 
@@ -16,22 +14,22 @@ using namespace std;
 #define DATE_STRING_LENGTH                  10
 
 struct TimeComponents {
-    string year;
-    string month;
-    string day;
+    std::string year;
+    std::string month;
+    std::string day;
 
-    string hour;
-    string minute;
-    string second;
+    std::string hour;
+    std::string minute;
+    std::string second;
 
-    string microsecond;
+    std::string microsecond;
 };
 
 class StrDate {
     public:
-        static string getTimestamp();
-        static string getTimestamp(bool includeus);
-        static string getTimestampToMicrosecond();
+        static std::string getTimestamp();
+        static std::string getTimestamp(bool includeus);
+        static std::string getTimestampToMicrosecond();
 };
 
 #endif

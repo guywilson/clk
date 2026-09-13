@@ -12,11 +12,9 @@
 
 #include "strdate.h"
 
-using namespace std;
-
 static void fillTimeStruct(TimeComponents * time) {
     auto twoDigits = [](int v) {
-        string s = to_string(v);
+        std::string s = std::to_string(v);
 
         if (s.size() < 2) {
             s.insert(s.begin(), '0');
@@ -26,7 +24,7 @@ static void fillTimeStruct(TimeComponents * time) {
     };
 
     auto fourDigits = [](int v) {
-        string s = to_string(v);
+        std::string s = std::to_string(v);
 
         while (s.size() < 4) {
             s.insert(s.begin(), '0');
@@ -51,22 +49,22 @@ static void fillTimeStruct(TimeComponents * time) {
     time->minute = twoDigits((int)ltime.tm_min);
     time->second = twoDigits((int)ltime.tm_sec);
 
-    time->microsecond = to_string(static_cast<int>(tv.tv_usec));
+    time->microsecond = std::to_string(static_cast<int>(tv.tv_usec));
 }
 
-string StrDate::getTimestamp() {
+std::string StrDate::getTimestamp() {
     return getTimestamp(false);
 }
 
-string StrDate::getTimestampToMicrosecond() {
+std::string StrDate::getTimestampToMicrosecond() {
     return getTimestamp(true);
 }
 
-string StrDate::getTimestamp(bool includeus) {
+std::string StrDate::getTimestamp(bool includeus) {
     TimeComponents tc;
     fillTimeStruct(&tc);
 
-    string ts =
+    std::string ts =
         tc.year + "-" +
         tc.month + "-" +
         tc.day + " " +
