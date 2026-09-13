@@ -102,63 +102,54 @@ int main(int argc, char ** argv) {
 
     CmdArg cmdArg = CmdArg(argc, argv);
 
-#ifndef RUN_IN_DEBUGGER
-    if (cmdArg.getNumArgs() > 0) {
-        while (cmdArg.hasMoreArgs()) {
-            string arg = cmdArg.nextArg();
-
-            if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
-                operation = arg;
-            }
-            else if (arg == "-algo") {
-                algo = cmdArg.nextArg();
-            }
-            else if (arg =="-security-level" || arg == "-sl") {
-                securityLevel = cmdArg.nextArg();
-            }
-            else if (arg == "-host" || arg == "-h") {
-                hostFilename = cmdArg.nextArg();
-            }
-            else if (arg == "-key" || arg == "-k") {
-                keyFilename = cmdArg.nextArg();
-            }
-            else if (arg == "-generate" || arg == "-g") {
-                keyFilename = cmdArg.nextArg();
-                generateKey = true;
-            }
-            else if (arg == "--capacity" || arg == "-c") {
-                reportCapacity = true;
-            }
-            else if (arg == "--help" || arg == "-?") {
-                printUsage();
-                return 0;
-            }
-            else if (arg == "--version" || arg == "-v") {
-                cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
-                return 0;
-            }
-            else if (cmdArg.isLastArg()) {
-                dataFilename = arg;
-                break;
-            }
-            else {
-                cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
-                printUsage();
-                return -1;
-            }
-        }
-    }
-    else {
+    if (cmdArg.getNumArgs() == 0) {
         printUsage();
         return -1;
     }
-#else
-    operation = "extract";
-    algo = "aes256";
-    securityLevel = "high";
-    hostFilename = "/Users/guy/flowers.png";
-    dataFilename = "/Users/guy/out.pptx";
-#endif
+
+    while (cmdArg.hasMoreArgs()) {
+        string arg = cmdArg.nextArg();
+
+        if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
+            operation = arg;
+        }
+        else if (arg == "-algo") {
+            algo = cmdArg.nextArg();
+        }
+        else if (arg =="-security-level" || arg == "-sl") {
+            securityLevel = cmdArg.nextArg();
+        }
+        else if (arg == "-host" || arg == "-h") {
+            hostFilename = cmdArg.nextArg();
+        }
+        else if (arg == "-key" || arg == "-k") {
+            keyFilename = cmdArg.nextArg();
+        }
+        else if (arg == "-generate" || arg == "-g") {
+            keyFilename = cmdArg.nextArg();
+            generateKey = true;
+        }
+        else if (arg == "--capacity" || arg == "-c") {
+            reportCapacity = true;
+        }
+        else if (arg == "--help" || arg == "-?") {
+            printUsage();
+            return 0;
+        }
+        else if (arg == "--version" || arg == "-v") {
+            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
+            return 0;
+        }
+        else if (cmdArg.isLastArg()) {
+            dataFilename = arg;
+            break;
+        }
+        else {
+            cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
+            printUsage();
+            return -1;
+        }
+    }
 
     Logger & log = Logger::getInstance();
     log.init("clk.log", defaultLogLevel);

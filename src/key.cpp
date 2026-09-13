@@ -60,30 +60,32 @@ static pair<uint8_t *, size_t> getKeyFromUser() {
                 __LINE__);
     }
 
-#ifndef RUN_IN_DEBUGGER
     string password;
 	int i = 0;
+    int ch = 0;
 
     cout << "Enter password: ";
 
-    while (i < MAX_PASSWORD_LENGTH) {
-        int ch = __getch();
+    while (ch != '\n') {
+        ch = __getch();
 
-        if (ch != '\n' && ch != '\r') {
-            putchar('*');
-            fflush(stdout);
-            password += (char)ch;
-        }
-        else {
+        if (ch == EOF) {
             break;
         }
+
+        if (i == MAX_PASSWORD_LENGTH - 1) {
+            break;
+        }
+
+        if (ch != '\n' && ch != '\r') {
+            password += (char)ch;
+        }
+
+        i++;
     }
 
-    putchar('\n');
+    std::cout << std::endl;
     fflush(stdout);
-#else
-    string password = "password";
-#endif
 
 	gcry_md_hash_buffer(GCRY_MD_SHA3_256, keyBuffer, password.c_str(), password.length());
     password.clear();
