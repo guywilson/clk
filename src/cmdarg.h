@@ -1,3 +1,4 @@
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -54,6 +55,14 @@ class CmdArg {
             }
 
             return args[i];
+        }
+
+        inline void dumpArgs() {
+            cout << "Num args captured: " << getNumArgs() << endl;
+            for (int i = 0;i < getNumArgs();i++) {
+                string arg = args[i];
+                cout << "Arg " << i << " = '" << arg << "'" << endl;
+            }
         }
 };
  

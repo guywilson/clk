@@ -90,7 +90,7 @@ static void printUsage() {
 }
 
 int main(int argc, char ** argv) {
-    int defaultLogLevel = LOG_LEVEL_ALL;
+    int defaultLogLevel = LOG_LEVEL_FATAL | LOG_LEVEL_ERROR;
     string algo;
     string securityLevel;
     string operation;
@@ -103,47 +103,54 @@ int main(int argc, char ** argv) {
     CmdArg cmdArg = CmdArg(argc, argv);
 
 #ifndef RUN_IN_DEBUGGER
-    while (cmdArg.hasMoreArgs()) {
-        string arg = cmdArg.nextArg();
+    if (cmdArg.getNumArgs() > 0) {
+        while (cmdArg.hasMoreArgs()) {
+            string arg = cmdArg.nextArg();
 
-        if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
-            operation = arg;
+            if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
+                operation = arg;
+            }
+            else if (arg == "-algo") {
+                algo = cmdArg.nextArg();
+            }
+            else if (arg =="-security-level" || arg == "-sl") {
+                securityLevel = cmdArg.nextArg();
+            }
+            else if (arg == "-host" || arg == "-h") {
+                hostFilename = cmdArg.nextArg();
+            }
+            else if (arg == "-key" || arg == "-k") {
+                keyFilename = cmdArg.nextArg();
+            }
+            else if (arg == "-generate" || arg == "-g") {
+                keyFilename = cmdArg.nextArg();
+                generateKey = true;
+            }
+            else if (arg == "--capacity" || arg == "-c") {
+                reportCapacity = true;
+            }
+            else if (arg == "--help" || arg == "-?") {
+                printUsage();
+                return 0;
+            }
+            else if (arg == "--version" || arg == "-v") {
+                cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
+                return 0;
+            }
+            else if (cmdArg.isLastArg()) {
+                dataFilename = arg;
+                break;
+            }
+            else {
+                cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
+                printUsage();
+                return -1;
+            }
         }
-        else if (arg == "-algo") {
-            algo = cmdArg.nextArg();
-        }
-        else if (arg =="-security-level" || arg == "-sl") {
-            securityLevel = cmdArg.nextArg();
-        }
-        else if (arg == "-host" || arg == "-h") {
-            hostFilename = cmdArg.nextArg();
-        }
-        else if (arg == "-key" || arg == "-k") {
-            keyFilename = cmdArg.nextArg();
-        }
-        else if (arg == "-generate" || arg == "-g") {
-            keyFilename = cmdArg.nextArg();
-            generateKey = true;
-        }
-        else if (arg == "--capacity" || arg == "-c") {
-            reportCapacity = true;
-        }
-        else if (arg == "--help" || arg == "-?") {
-            printUsage();
-            return 0;
-        }
-        else if (arg == "--version" || arg == "-v") {
-            cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << endl << endl;
-            return 0;
-        }
-        else if (cmdArg.isLastArg()) {
-            dataFilename = arg;
-            break;
-        }
-        else {
-            cout << "Invalid program argument: Sorry, I do not understand the parameter '" << arg << "'" << endl << endl;
-            return -1;
-        }
+    }
+    else {
+        printUsage();
+        return -1;
     }
 #else
     operation = "extract";

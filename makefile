@@ -102,7 +102,7 @@ install: $(TARGET)
 	cp $(TARGET).1 /usr/local/share/man/man1
 
 version:
-	$(VBUILD) -incfile $(TARGET).ver -template version.c.template -out $(SOURCE)/version.c -major $(MAJOR_VERSION) -minor $(MINOR_VERSION)
+	$(VBUILD) -i $(TARGET).ver -t version.c.template -o $(SOURCE)/version.c -major $(MAJOR_VERSION) -minor $(MINOR_VERSION)
 
 clean:
 	rm -r $(BUILD)
