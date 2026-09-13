@@ -2,12 +2,6 @@
 #include <string>
 #include <stdio.h>
 
-#ifdef _WIN32
-#include <conio.h>
-#else
-#include <termios.h>
-#endif
-
 #include "filefactory.h"
 #include "cloakable.h"
 #include "encryptable.h"
