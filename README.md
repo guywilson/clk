@@ -32,18 +32,16 @@ https://www.random.org/
 
 ## Building clk
 
-Cloak is written in C++ and I have provided a makefile for Unix/Linux using the g++ compiler (tested on Mac OS). Cloak depends on the 3rd party libraries libpng (http://libpng.org) and libgcrypt (https://www.gnupg.org/software/libgcrypt/index.html) (for the encryption and hashing algorithms, part of GPG).
+Cloak is written in C++, it depends on the 3rd party libraries libpng (http://libpng.org) and libgcrypt (https://www.gnupg.org/software/libgcrypt/index.html) (for the encryption and hashing algorithms, part of GPG).
 
-Generate the makefile and build with a C++20 compiler, the libpng and
-libgcrypt development headers/libraries, and Pandoc (for the manual page):
+To generate the makefile and build with a C++20 compiler, linking with the libpng and libgcrypt libraries, and using Pandoc (to generate the manual page):
 
 ```sh
 ./configure
 make
 ```
 
-After editing `configure.ac`, regenerate `configure` with `autoconf`.
-The original hand-written makefile is preserved as `makefile.original`;
+After editing `configure.ac`, regenerate `configure` with `autoconf`. The original hand-written makefile is preserved as `makefile.original`;
 edit `makefile.in` to change the generated makefile.
 
 Release builds use `-O2`. For a debug build using `-g -O0`:
