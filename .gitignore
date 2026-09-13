@@ -5,3 +5,8 @@ clk
 .DS_Store
 clk.log
 clk.1
+/makefile
+/autom4te.cache/
+/config.log
+/config.status
+/configure~

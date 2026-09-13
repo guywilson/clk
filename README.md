@@ -34,6 +34,36 @@ https://www.random.org/
 
 Cloak is written in C++ and I have provided a makefile for Unix/Linux using the g++ compiler (tested on Mac OS). Cloak depends on the 3rd party libraries libpng (http://libpng.org) and libgcrypt (https://www.gnupg.org/software/libgcrypt/index.html) (for the encryption and hashing algorithms, part of GPG).
 
+Generate the makefile and build with a C++20 compiler, the libpng and
+libgcrypt development headers/libraries, and Pandoc (for the manual page):
+
+```sh
+./configure
+make
+```
+
+After editing `configure.ac`, regenerate `configure` with `autoconf`.
+The original hand-written makefile is preserved as `makefile.original`;
+edit `makefile.in` to change the generated makefile.
+
+Release builds use `-O2`. For a debug build using `-g -O0`:
+
+```sh
+make clean
+make DEBUG=1
+```
+
+Run `make clean` when switching build modes so all objects are rebuilt.
+Both modes retain `-Wall -pedantic` and C++20 support. Configure accepts
+`CC`, `CXX`, `CPPFLAGS`, `CFLAGS`, `CXXFLAGS`, and `LDFLAGS`; for example,
+use `CPPFLAGS=-I/path/include LDFLAGS=-L/path/lib ./configure` for libraries
+installed outside the compiler's default search paths.
+
+The `all`, `install`, `version`, and `clean` targets remain available.
+`./configure --prefix=/path` changes the default `/usr/local` installation
+prefix, and `make install DESTDIR=/staging/path` supports staged installs.
+`make version` requires the existing `vbuild` utility.
+
 ## Using clk
 
 Type clk --help to get help on the command line parameters:
