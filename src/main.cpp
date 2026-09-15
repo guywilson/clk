@@ -20,7 +20,7 @@
 #define OPERATION_EXTRACT               "extract"
 
 static void printUsage() {
-    std::cout << "pfm  Copyright (C) 2026  Guy Wilson" << std::endl << std::endl;
+    std::cout << "clk  Copyright (C) 2026  Guy Wilson" << std::endl << std::endl;
 
     std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'." << std::endl;
     std::cout << "This is free software, and you are welcome to redistribute it" << std::endl;
@@ -42,6 +42,7 @@ static void printUsage() {
     std::cout << "    -c | --capacity report the capacity of the host file and exit" << std::endl;
     std::cout << "    -? | --help show this help and exit" << std::endl;
     std::cout << "    -v | --version print version information and exit" << std::endl;
+    std::cout << "    --license print license details and exit" << std::endl;
     std::cout << std::endl;
 }
 
