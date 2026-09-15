@@ -32,6 +32,26 @@ class CloakableFileFactory {
             return nullptr;
         }
 
+        static std::unique_ptr<CloakableInputFile> createInputFile(const AlgorithmType & type) {
+            if (type == AlgorithmType::aes_encryption) {
+                std::unique_ptr<EncryptableFile> file = std::make_unique<AESEncryptableFile>();
+                file->open();
+                return file;
+            }
+            else if (type == AlgorithmType::xor_encryption) {
+                std::unique_ptr<EncryptableFile> file = std::make_unique<XOREncryptableFile>();
+                file->open();
+                return file;
+            }
+            else if (type == AlgorithmType::no_encryption) {
+                std::unique_ptr<CloakableInputFile> file = std::make_unique<CloakableInputFile>();
+                file->open();
+                return file;
+            }
+
+            return nullptr;
+        }
+
         static std::unique_ptr<CloakableOutputFile> createOutputFile(const std::string & filename, const AlgorithmType & type) {
             if (type == AlgorithmType::aes_encryption) {
                 std::unique_ptr<DecryptableFile> file = std::make_unique<AESDecryptableFile>();
@@ -51,22 +71,27 @@ class CloakableFileFactory {
 
             return nullptr;
         }
+
+        static std::unique_ptr<CloakableOutputFile> createOutputFile(const AlgorithmType & type) {
+            if (type == AlgorithmType::aes_encryption) {
+                std::unique_ptr<DecryptableFile> file = std::make_unique<AESDecryptableFile>();
+                file->open();
+                return file;
+            }
+            else if (type == AlgorithmType::xor_encryption) {
+                std::unique_ptr<DecryptableFile> file = std::make_unique<XORDecryptableFile>();
+                file->open();
+                return file;
+            }
+            else if (type == AlgorithmType::no_encryption) {
+                std::unique_ptr<CloakableOutputFile> file = std::make_unique<CloakableOutputFile>();
+                file->open();
+                return file;
+            }
+
+            return nullptr;
+        }
 };
-
-// class CloakableFileFactory {
-//     public:
-//         static unique_ptr<CloakableInputFile> createInputFile(const string & filename) {
-//             unique_ptr<CloakableInputFile> file = make_unique<CloakableInputFile>();
-//             file->open(filename);
-//             return file;
-//         }
-
-//         static unique_ptr<CloakableOutputFile> createOutputFile(const string & filename) {
-//             unique_ptr<CloakableOutputFile> file = make_unique<CloakableOutputFile>();
-//             file->open(filename);
-//             return file;
-//         }
-// };
 
 class EncryptableFileFactory {
     public:
@@ -79,6 +104,21 @@ class EncryptableFileFactory {
             else if (type == AlgorithmType::xor_encryption) {
                 std::unique_ptr<EncryptableFile> file = std::make_unique<XOREncryptableFile>();
                 file->open(filename);
+                return file;
+            }
+
+            return nullptr;
+        }
+
+        static std::unique_ptr<EncryptableFile> create(const AlgorithmType & type) {
+            if (type == AlgorithmType::aes_encryption) {
+                std::unique_ptr<EncryptableFile> file = std::make_unique<AESEncryptableFile>();
+                file->open();
+                return file;
+            }
+            else if (type == AlgorithmType::xor_encryption) {
+                std::unique_ptr<EncryptableFile> file = std::make_unique<XOREncryptableFile>();
+                file->open();
                 return file;
             }
 
@@ -97,6 +137,21 @@ class DecryptableFileFactory {
             else if (type == AlgorithmType::xor_encryption) {
                 std::unique_ptr<DecryptableFile> file = std::make_unique<XORDecryptableFile>();
                 file->open(filename);
+                return file;
+            }
+
+            return nullptr;
+        }
+
+        static std::unique_ptr<DecryptableFile> create(const AlgorithmType & type) {
+            if (type == AlgorithmType::aes_encryption) {
+                std::unique_ptr<DecryptableFile> file = std::make_unique<AESDecryptableFile>();
+                file->open();
+                return file;
+            }
+            else if (type == AlgorithmType::xor_encryption) {
+                std::unique_ptr<DecryptableFile> file = std::make_unique<XORDecryptableFile>();
+                file->open();
                 return file;
             }
 

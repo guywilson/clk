@@ -22,28 +22,33 @@ The idea is simple, a 24-bit colour PNG image uses 3 bytes for each pixel in the
 
 Specifies the filename of the host. Currently, clk only supports 24-bit PNG images. That is PNG images that store their image data with 8-bits per colour channel (RGB).
 
-**-algo [encryption algorithm]**
+**`--aes256` or `--aes`**
 
-The algorithm used to encrypt your file prior to merging with the host file and decrypt after extracting. It can be one of the following:
+Encrypt the file prior to merging, and decrypt after extracting using AES-256, this is the default. The user will be prompted to enter a password (make it a good one).
 
-- aes256 - encrypt using the AES-256 algorithm in CBC mode
-- aes    - an alias for aes256
-- xor    - encrypt using XOR encryption
-- otp    - an alias for xor
-- none   - no encryption (just hide)
-- no     - an alias for none
+**`--xor` or `--otp`**
 
-If -algo aes256 is specified, the user will be prompted to enter a password.
+Encrypt the file prior to merging, and decrypt after extracting using XOR encryption. If this option is specified, the user must also specify a key file using the -k or -g option.
 
-If -algo xor is specified, the user must specify the key file to encrypt with using the -k or -g option.
+**`--no-encryption`**
 
-**-sl, -security-level**
+Do not encrypt the file prior to merging, or decrypt after extracting. Just hide the file in the image.
 
-Specify the security level to use when hiding/extracting your file, it can be one of the following:
+**`--high` or `--hi`**
 
-- high    - The most secure, uses 8 bytes of host data to store one byte of your file.
-- medium  - Uses 4 bytes of host data to store one byte of your file.
-- low     - Not recommended, uses 2 bytes of host data to store 1 byte of your file.
+The most secure, uses 8 bytes of image data for each byte of your file. There will be no visible difference before and after merging a file into the image.
+
+**`--medium` or `--med`**
+
+Uses 4 bytes of image data for each byte of your file. There will be little visible difference before and after merging a file into the image.
+
+**`--low` or `--lo`**
+
+Not recommended. Uses 2 bytes of image data for each byte of your file. There will be a very visible difference before and after merging a file into the image, it will appear as “grain”.
+
+**`--no-security`**
+
+DO NOT USE, FOR TESTING ONLY! Uses 1 bytes of image data for each byte of your file., i.e. will simply replace the image with your data.
 
 **-k, -key [key file]**
 
@@ -55,17 +60,17 @@ Supply a key file for XOR encryption, clk will abort with an error if key file i
 
 **-g, -generate [key file]**
 
-This will generate random data the same length as your file to encrypt with XOR encryption and save it to your key file, pfm will use the data to encrypt your file before exiting, so can be used in the same way as the -k option. See the -k option for the rules around OTP encryption.
+This will generate random data the same length as your file to encrypt with XOR encryption and save it to your key file, clk will use the data to encrypt your file before exiting, so can be used in the same way as the -k option. See the -k option for the rules around OTP encryption.
 
-**-c, --capacity**
+**-c, `--capacity`**
 
 Report the capacity of the host file specified with -host at the specified security level and exit.
 
-**--version, -v**
+**`--version`, -v**
 
 Prints the version information of the clk program and exits.
 
-**--help, -?**
+**`--help`, -?**
 
 Prints the supported command line options and exits.
 
@@ -73,15 +78,21 @@ Prints the supported command line options and exits.
 
 To 'cloak' file clk.dat using AES-256 encryption within test.png using the highest security level:
 
-```clk merge -security-level high -algo aes -host test.png clk.dat```
+```
+	clk merge --high --aes256 -host test.png clk.dat
+```
 
 To 'uncloak' file out.dat from test.png using AES-256 encryption:
 
-```clk extract -security-level high -algo aes -host test.png out.dat```
+```
+	clk extract --high --aes256 -host test.png out.dat
+```
 
 To report the capacity of test.png using the highest security level:
 
-```clk merge -security-level high -host test.png --capacity```
+```
+	clk merge --capacity --high -host test.png
+```
 
 # AUTHOR
 
@@ -91,14 +102,17 @@ Written by Guy Wilson.
 
 Copyright (c) 2026 Guy Wilson.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+You can contact the author at wilson.guy@gmail.com

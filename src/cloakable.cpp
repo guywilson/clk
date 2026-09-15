@@ -46,6 +46,18 @@ void CloakableInputFile::open(const std::string & filename) {
     log.exit("CloakableInputFile::open()");
 }
 
+void CloakableInputFile::open() {
+    log.entry("CloakableInputFile::open()");
+
+    fptr = stdin;
+
+    calculateFileLength();
+
+    this->fileName = "standard_input";
+
+    log.exit("CloakableInputFile::open()");
+}
+
 size_t CloakableInputFile::readBlock(uint8_t * buffer, size_t bytesToRead) {
     log.entry("CloakableInputFile::readBlock()");
 
@@ -93,6 +105,16 @@ void CloakableOutputFile::open(const std::string & filename) {
     }
 
     this->fileName = filename;
+
+    log.exit("CloakableOutputFile::open()");
+}
+
+void CloakableOutputFile::open() {
+    log.entry("CloakableOutputFile::open()");
+
+    fptr = stdout;
+
+    this->fileName = "standard_output";
 
     log.exit("CloakableOutputFile::open()");
 }

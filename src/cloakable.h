@@ -127,6 +127,7 @@ class CloakableInputFile : public CloakableFile {
 
     public:
         void open(const std::string & filename) override;
+        void open();
 
         size_t read(uint8_t * buffer, size_t bufferLength) {
             size_t bytesRead = 0;
@@ -189,6 +190,7 @@ class CloakableOutputFile : public CloakableFile {
 
     public:
         void open(const std::string & filename) override;
+        void open();
 
         virtual size_t writeBlock(uint8_t * buffer, size_t bytesToWrite);
 

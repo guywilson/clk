@@ -19,60 +19,24 @@
 #define OPERATION_MERGE                 "merge"
 #define OPERATION_EXTRACT               "extract"
 
-static CloakSecurity getSecurityLevelArg(const std::string & arg) {
-    CloakSecurity security;
-
-    if (arg == "high" || arg == "hi") {
-        security = CloakSecurity::security_high;
-    }
-    else if (arg == "medium" || arg == "med") {
-        security = CloakSecurity::security_medium;
-    }
-    else if (arg == "low" || arg == "lo") {
-        security = CloakSecurity::security_low;
-    }
-    else if (arg == "none" || arg == "no") {
-        security = CloakSecurity::security_none;
-    }
-    else if (arg.length() == 0) {
-        security = CloakSecurity::security_high;
-    }
-    else {
-        throw clk_error(clk_error::buildMsg("Invalid security level supplied, do not understand '%s'", arg.c_str()));
-    }
-
-    return security;
-}
-
-static AlgorithmType getAlgorithmArg(const std::string & arg) {
-    AlgorithmType algorithm;
-
-    if (arg == "aes" || arg == "aes256") {
-        algorithm = AlgorithmType::aes_encryption;
-    }
-    else if (arg == "xor" || arg == "otp") {
-        algorithm = AlgorithmType::xor_encryption;
-    }
-    else if (arg == "none" || arg == "no") {
-        algorithm = AlgorithmType::no_encryption;
-    }
-    else if (arg.length() == 0) {
-        algorithm = AlgorithmType::no_encryption;
-    }
-    else {
-        throw clk_error(clk_error::buildMsg("Invalid algorithm supplied, do not understand '%s'", arg.c_str()));
-    }
-
-    return algorithm;
-}
-
 static void printUsage() {
+    std::cout << "pfm  Copyright (C) 2026  Guy Wilson" << std::endl << std::endl;
+
+    std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'." << std::endl;
+    std::cout << "This is free software, and you are welcome to redistribute it" << std::endl;
+    std::cout << "under certain conditions; type `show c' for details." << std::endl << std::endl;
+
     std::cout << "Usage: clk [merge|extract] [options] file" << std::endl;
     std::cout << "Hide or extract, an optionally encrypted file in/from the specifed bitmap based host file" << std::endl;
     std::cout << "options:" << std::endl;
     std::cout << "    -h | -host [host file] - currently supports 24-bit PNG images only" << std::endl;
-    std::cout << "    -algo [encryption algorithm] (aes|xor|none)" << std::endl;
-    std::cout << "    -sl | -security-level [level] (high|medium|low)" << std::endl;
+    std::cout << "    --aes | --aes256 - Use AES-256 encryption (default)" << std::endl;
+    std::cout << "    --xor | --otp - Use XOR encryption" << std::endl;
+    std::cout << "    --no-encryption - Do not encrypt the file, hide only" << std::endl;
+    std::cout << "    --high | --hi - Use high security (1-bit/byte) (default) - Uses the most space in an image" << std::endl;
+    std::cout << "    --medium | --med - Use medium security (2-bits/byte)" << std::endl;
+    std::cout << "    --low | --lo - Use low security (4-bits/byte) - Uses the least space but will be visisble in the image" << std::endl;
+    std::cout << "    --no-security - No security (8-bits/byte) - Do not use, TESTING ONLY!" << std::endl;
     std::cout << "    -k | -key [keyfile] for XOR encryption use the keyfile as the key" << std::endl;
     std::cout << "    -g | -generate [keyfile] for XOR encryption, generate and use the keyfile as the key" << std::endl;
     std::cout << "    -c | --capacity report the capacity of the host file and exit" << std::endl;
@@ -83,8 +47,8 @@ static void printUsage() {
 
 int main(int argc, char ** argv) {
     int defaultLogLevel = LOG_LEVEL_FATAL | LOG_LEVEL_ERROR;
-    std::string algo;
-    std::string securityLevel;
+    AlgorithmType algorithm = AlgorithmType::aes_encryption;
+    CloakSecurity security = CloakSecurity::security_high;
     std::string operation;
     std::string hostFilename;
     std::string dataFilename;
@@ -105,11 +69,26 @@ int main(int argc, char ** argv) {
         if (arg == OPERATION_MERGE || arg == OPERATION_EXTRACT) {
             operation = arg;
         }
-        else if (arg == "-algo") {
-            algo = cmdArg.nextArg();
+        else if (arg == "--aes" || arg == "--aes256") {
+            algorithm = AlgorithmType::aes_encryption;
         }
-        else if (arg =="-security-level" || arg == "-sl") {
-            securityLevel = cmdArg.nextArg();
+        else if (arg == "--xor" || arg == "--otp") {
+            algorithm = AlgorithmType::xor_encryption;
+        }
+        else if (arg == "--no-encryption") {
+            algorithm = AlgorithmType::no_encryption;
+        }
+        else if (arg == "--high" || arg == "--hi") {
+            security = CloakSecurity::security_high;
+        }
+        else if (arg == "--medium" || arg == "--med") {
+            security = CloakSecurity::security_medium;
+        }
+        else if (arg == "--low" || arg == "--lo") {
+            security = CloakSecurity::security_low;
+        }
+        else if (arg == "--no-security") {
+            security = CloakSecurity::security_none;
         }
         else if (arg == "-host" || arg == "-h") {
             hostFilename = cmdArg.nextArg();
@@ -150,7 +129,7 @@ int main(int argc, char ** argv) {
         PNGReader * reader = new PNGReader();
         reader->open(hostFilename);
 
-        size_t hostCapacity = reader->getCapacity(CLOAKED_LENGTH_BLOCK_SIZE, getSecurityLevelArg(securityLevel));
+        size_t hostCapacity = reader->getCapacity(CLOAKED_LENGTH_BLOCK_SIZE, security);
         
         if (reportCapacity) {
             std::cout <<
@@ -167,12 +146,10 @@ int main(int argc, char ** argv) {
             return 0;
         }
 
-        AlgorithmType algorithm = getAlgorithmArg(algo);
-
         generateKey = (algorithm == AlgorithmType::aes_encryption) ? false : generateKey;
 
         PNGHost host;
-        host.setCloakSecurityLevel(getSecurityLevelArg(securityLevel));
+        host.setCloakSecurityLevel(security);
 
         if (operation == OPERATION_MERGE) {
             auto file = CloakableFileFactory::createInputFile(dataFilename, algorithm);
@@ -182,7 +159,7 @@ int main(int argc, char ** argv) {
 
             file->fillInitialisationBlockBuffer(initBuffer);
 
-            hostCapacity = reader->getCapacity(initBufferSize, getSecurityLevelArg(securityLevel));
+            hostCapacity = reader->getCapacity(initBufferSize, security);
 
             if (file->size() > hostCapacity) {
                 reader->close();
