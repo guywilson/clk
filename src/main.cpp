@@ -14,6 +14,7 @@
 #include "cmdarg.h"
 #include "key.h"
 #include "version.h"
+#include "license.h"
 #include "xdump.h"
 
 #define OPERATION_MERGE                 "merge"
@@ -22,9 +23,9 @@
 static void printUsage() {
     std::cout << "clk  Copyright (C) 2026  Guy Wilson" << std::endl << std::endl;
 
-    std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'." << std::endl;
+    std::cout << "This program comes with ABSOLUTELY NO WARRANTY; for details run 'clk --license'" << std::endl;
     std::cout << "This is free software, and you are welcome to redistribute it" << std::endl;
-    std::cout << "under certain conditions; type `show c' for details." << std::endl << std::endl;
+    std::cout << "under certain conditions; the license text explains these conditions." << std::endl << std::endl;
 
     std::cout << "Usage: clk [merge|extract] [options] file" << std::endl;
     std::cout << "Hide or extract, an optionally encrypted file in/from the specifed bitmap based host file" << std::endl;
@@ -110,6 +111,10 @@ int main(int argc, char ** argv) {
         }
         else if (arg == "--version" || arg == "-v") {
             std::cout << "clk version " << getVersion() << ", build date [" << getBuildDate() << "]" << std::endl << std::endl;
+            return 0;
+        }
+        else if (arg == "--license") {
+            printLicense();
             return 0;
         }
         else if (cmdArg.isLastArg()) {
