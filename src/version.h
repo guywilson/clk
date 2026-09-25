@@ -1,5 +1,4 @@
-#ifndef _INCL_VERSION
-#define _INCL_VERSION
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,6 +9,4 @@ const char * getBuildDate(void);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

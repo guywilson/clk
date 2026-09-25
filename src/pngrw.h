@@ -1,11 +1,10 @@
+#pragma once
+
 #include <string>
 
 #include <png.h>
 
 #include "hostfile.h"
-
-#ifndef __INCL_PNG_RW
-#define __INCL_PNG_RW
 
 struct png_geometry_t {
     png_uint_32 width;
@@ -85,5 +84,3 @@ class PNGWriter : public HostFileWriter {
         void assignImageDetails(png_details_t * source);
         void writeBlock(uint8_t * buffer, size_t bufferLength) override {}
 };
-
-#endif

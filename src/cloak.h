@@ -1,8 +1,7 @@
+#pragma once
+
 #include <string>
 #include <stdint.h>
-
-#ifndef __INCL_CLOAK
-#define __INCL_CLOAK
 
 enum class CloakSecurity {
     security_high = 1,
@@ -66,5 +65,3 @@ class CloakAlgorithm {
                         size_t blockLength, 
                         const CloakSecurity & security);
 };
-
-#endif

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <string.h>
@@ -10,9 +12,6 @@
 #include "clk_error.h"
 
 #include "random_block.h"
-
-#ifndef __INCL_ENCRYPTABLE
-#define __INCL_ENCRYPTABLE
 
 class EncryptableFile : public CloakableInputFile {
     protected:
@@ -120,5 +119,3 @@ class XOREncryptableFile : public EncryptableFile {
 
         virtual void setKey(uint8_t * key, size_t keyLength) override;
 };
-
-#endif

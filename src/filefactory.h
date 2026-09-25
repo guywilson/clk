@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <memory>
 
@@ -6,9 +8,6 @@
 #include "encryptable.h"
 #include "decryptable.h"
 #include "logger.h"
-
-#ifndef __INCL_FILEFACTORY
-#define __INCL_FILEFACTORY
 
 class CloakableFileFactory {
     public:
@@ -158,5 +157,3 @@ class DecryptableFileFactory {
             return nullptr;
         }
 };
-
-#endif

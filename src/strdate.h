@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -5,9 +7,6 @@
 #include <cstdint>
 
 #include "logger.h"
-
-#ifndef __INCL_STRDATE
-#define __INCL_STRDATE
 
 #define TIME_STAMP_BUFFER_LEN               64
 #define DATE_STAMP_BUFFER_LEN               32
@@ -31,5 +30,3 @@ class StrDate {
         static std::string getTimestamp(bool includeus);
         static std::string getTimestampToMicrosecond();
 };
-
-#endif

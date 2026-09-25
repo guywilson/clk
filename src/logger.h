@@ -1,10 +1,9 @@
+#pragma once
+
 #include <string>
 #include <stdio.h>
 #include <unistd.h>
 #include <pthread.h>
-
-#ifndef _INCL_LOGGER
-#define _INCL_LOGGER
 
 /*
 ** Supported log levels...
@@ -64,5 +63,3 @@ class Logger {
         int error(const char * fmt, ...);
         int fatal(const char * fmt, ...);
 };
-
-#endif

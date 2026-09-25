@@ -1,11 +1,10 @@
+#pragma once
+
 #include <string>
 
 #include <png.h>
 
 #include "image.h"
-
-#ifndef __INCL_PNG_HOST
-#define __INCL_PNG_HOST
 
 class PNGHost : public Image {
     public:
@@ -19,5 +18,3 @@ class PNGHost : public Image {
                         uint8_t * targetBlock, 
                         size_t targetBlockSize) override;
 };
-
-#endif

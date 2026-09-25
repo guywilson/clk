@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -5,9 +7,6 @@
 #include <stdbool.h>
 
 #include "clk_error.h"
-
-#ifndef __INCL_CMDARG
-#define __INCL_CMDARG
 
 class CmdArg {
     private:
@@ -63,5 +62,3 @@ class CmdArg {
             }
         }
 };
- 
-#endif

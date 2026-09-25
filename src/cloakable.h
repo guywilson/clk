@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 #include <stdio.h>
@@ -11,9 +13,6 @@
 #include "clk_error.h"
 
 #include "random_block.h"
-
-#ifndef __INCL_CLOAKABLE_FILE
-#define __INCL_CLOAKABLE_FILE
 
 typedef uint32_t cloaked_len_t;
 
@@ -241,5 +240,3 @@ class CloakableOutputFile : public CloakableFile {
             return block;
         }
 };
-
-#endif

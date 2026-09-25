@@ -1,11 +1,10 @@
+#pragma once
+
 #include <exception>
 #include <string>
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
-
-#ifndef __CLK_ERROR
-#define __CLK_ERROR
 
 #define MESSAGE_BUFFER_LEN                  4096
 
@@ -68,5 +67,3 @@ class clk_fatal : public clk_error {
         clk_fatal(const char * msg) : clk_error(msg) {}
         clk_fatal(const char * msg, const char * file, int line) : clk_error(msg, file, line) {}
 };
-
-#endif

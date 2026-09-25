@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <string.h>
@@ -8,9 +10,6 @@
 #include "algorithm.h"
 #include "xdump.h"
 #include "clk_error.h"
-
-#ifndef __INCL_DECRYPTABLE
-#define __INCL_DECRYPTABLE
 
 class DecryptableFile : public CloakableOutputFile {
     protected:
@@ -117,5 +116,3 @@ class XORDecryptableFile : public DecryptableFile {
 
         virtual void setKey(uint8_t * key, size_t keyLength) override;
 };
-
-#endif

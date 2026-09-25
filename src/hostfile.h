@@ -1,12 +1,11 @@
+#pragma once
+
 #include <string>
 #include <memory>
 
 #include "logger.h"
 #include "binary.h"
 #include "cloak.h"
-
-#ifndef __INCL_HOSTFILE
-#define __INCL_HOSTFILE
 
 class HostFileReader : public BinaryFile {
     private:
@@ -77,5 +76,3 @@ class HostFile {
                         uint8_t * targetBlock, 
                         size_t targetBlockSize) = 0;
 };
-
-#endif
