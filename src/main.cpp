@@ -43,7 +43,8 @@ static void printUsage() {
     std::cout << "    -c | --capacity report the capacity of the host file and exit" << std::endl;
     std::cout << "    -? | --help show this help and exit" << std::endl;
     std::cout << "    -v | --version print version information and exit" << std::endl;
-    std::cout << "    --license print license details and exit" << std::endl;
+    std::cout << "    --license print license details and exit" << std::endl << std::endl;
+    std::cout << "                   *** FREE PALESTINE! ***                   " << std::endl;
     std::cout << std::endl;
 }
 
